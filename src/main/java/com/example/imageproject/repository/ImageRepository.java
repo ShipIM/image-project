@@ -1,7 +1,6 @@
 package com.example.imageproject.repository;
 
 import com.example.imageproject.model.entity.Image;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;

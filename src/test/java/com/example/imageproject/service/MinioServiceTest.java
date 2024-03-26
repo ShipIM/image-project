@@ -54,7 +54,7 @@ public class MinioServiceTest extends BaseTest {
     public void downloadFile_FileExists() {
         minioService.upload(file, objectName);
 
-        byte[] downloadedContent = minioService.download(objectName);
+        var downloadedContent = minioService.download(objectName);
 
         Assertions.assertAll(
                 () -> Assertions.assertNotNull(downloadedContent),
@@ -78,7 +78,7 @@ public class MinioServiceTest extends BaseTest {
                                 .object(objectName)
                                 .bucket(minioProperties.getBucket())
                                 .build()
-        ));
+                ));
     }
 
 }

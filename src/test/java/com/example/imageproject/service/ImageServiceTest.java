@@ -30,7 +30,6 @@ public class ImageServiceTest extends BaseTest {
     @MockBean
     private MinioService minioService;
 
-
     @Test
     public void saveImage() {
         var authentication = new UsernamePasswordAuthenticationToken(new User(), null);
