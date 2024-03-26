@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="ShipIM" id="16-03-2024--4-create-privileges">
+        <insert tableName="privilege">
+            <column name="name" value="IMAGE_UPLOAD_PRIVILEGE"/>
+        </insert>
+        <insert tableName="privilege">
+            <column name="name" value="IMAGE_DOWNLOAD_PRIVILEGE"/>
+        </insert>
+        <insert tableName="privilege">
+            <column name="name" value="IMAGE_DELETE_PRIVILEGE"/>
+        </insert>
+        <insert tableName="privilege">
+            <column name="name" value="IMAGE_FULL_ACCESS_PRIVILEGE"/>
+        </insert>
+        <insert tableName="privilege">
+            <column name="name" value="IMAGE_READ_PRIVILEGE"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
