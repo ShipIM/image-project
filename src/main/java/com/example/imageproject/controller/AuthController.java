@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
 @Tag(name = "Auth controller", description = "Basic API for working registration and authentication")
 public class AuthController {
 

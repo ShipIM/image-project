@@ -35,7 +35,7 @@ public class AuthControllerTest extends BaseTest {
 
         Mockito.when(authService.register(Mockito.any())).thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/registration")
+        mockMvc.perform(MockMvcRequestBuilders.post("/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -54,7 +54,7 @@ public class AuthControllerTest extends BaseTest {
 
         Mockito.when(authService.authenticate(Mockito.any())).thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/authentication")
+        mockMvc.perform(MockMvcRequestBuilders.post("/authentication")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -70,7 +70,7 @@ public class AuthControllerTest extends BaseTest {
 
         Mockito.when(authService.register(Mockito.any())).thenThrow(new DataIntegrityViolationException(""));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/registration")
+        mockMvc.perform(MockMvcRequestBuilders.post("/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -84,7 +84,7 @@ public class AuthControllerTest extends BaseTest {
 
         Mockito.when(authService.authenticate(Mockito.any())).thenThrow(new EntityNotFoundException(""));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/authentication")
+        mockMvc.perform(MockMvcRequestBuilders.post("/authentication")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
@@ -92,7 +92,7 @@ public class AuthControllerTest extends BaseTest {
 
     @Test
     public void registerUser_ValidationFailure() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/registration")
+        mockMvc.perform(MockMvcRequestBuilders.post("/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -100,7 +100,7 @@ public class AuthControllerTest extends BaseTest {
 
     @Test
     public void authenticateUser_ValidationFailure() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/authentication")
+        mockMvc.perform(MockMvcRequestBuilders.post("/authentication")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());

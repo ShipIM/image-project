@@ -40,7 +40,7 @@ public class ImageControllerTest extends BaseTest {
         var file = new MockMultipartFile("file", "file.jpeg",
                 MediaType.IMAGE_JPEG_VALUE, "content".getBytes());
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/image")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/image")
                         .file(file))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.imageId").value("imageId"));
@@ -52,7 +52,7 @@ public class ImageControllerTest extends BaseTest {
         var file = new MockMultipartFile("file", "file.txt",
                 MediaType.TEXT_PLAIN_VALUE, "content".getBytes());
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/image")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/image")
                         .file(file))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -63,14 +63,14 @@ public class ImageControllerTest extends BaseTest {
         var file = new MockMultipartFile("file", "file.txt",
                 MediaType.TEXT_PLAIN_VALUE, new byte[10485761]);
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/image")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/image")
                         .file(file))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     public void uploadImage_Forbidden() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/image"))
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/image"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -82,7 +82,7 @@ public class ImageControllerTest extends BaseTest {
                 .body((Resource) new ByteArrayResource(content));
         Mockito.when(imageService.download("imageId")).thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/image/imageId")
+        mockMvc.perform(MockMvcRequestBuilders.get("/image/imageId")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().bytes(content));
@@ -93,14 +93,14 @@ public class ImageControllerTest extends BaseTest {
     public void downloadImage_NotFound() throws Exception {
         Mockito.when(imageService.download(Mockito.any())).thenThrow(new EntityNotFoundException(""));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/image/nonExistingImageId")
+        mockMvc.perform(MockMvcRequestBuilders.get("/image/nonExistingImageId")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     public void downloadImage_Forbidden() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/image/nonExistingImageId"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/image/nonExistingImageId"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -110,7 +110,7 @@ public class ImageControllerTest extends BaseTest {
         Mockito.when(imageService.delete("imageId"))
                 .thenReturn(new UiSuccessContainer(true, "Image deleted successfully"));
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/image/imageId"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/image/imageId"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.success")
                         .value(true))
@@ -123,14 +123,14 @@ public class ImageControllerTest extends BaseTest {
     public void deleteImage_NotFound() throws Exception {
         Mockito.when(imageService.delete(Mockito.any())).thenThrow(new EntityNotFoundException(""));
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/image/nonExistingImageId")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/image/nonExistingImageId")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     public void deleteImage_Forbidden() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/image/imageId"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/image/imageId"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -139,14 +139,14 @@ public class ImageControllerTest extends BaseTest {
     public void getImages_Success() throws Exception {
         Mockito.when(imageService.getAllMeta()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/images")
+        mockMvc.perform(MockMvcRequestBuilders.get("/images")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
     public void getImages_Forbidden() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/images"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/images"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 

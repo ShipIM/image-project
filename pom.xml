@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.0.4</version>
+            <version>2.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -176,6 +176,23 @@
                                 <include>com/example/imageproject/util/*</include>
                                 <include>com/example/imageproject/controller/*</include>
                             </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools.openapidiff</groupId>
+                <artifactId>openapi-diff-maven</artifactId>
+                <version>2.1.0-beta.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>diff</goal>
+                        </goals>
+                        <configuration>
+                            <oldSpec>${project.basedir}/spec/specification.yaml</oldSpec>
+                            <newSpec>${project.basedir}/target/swagger.json</newSpec>
+                            <jsonOutputFileName>${project.basedir}/target/diff.json</jsonOutputFileName>
                         </configuration>
                     </execution>
                 </executions>

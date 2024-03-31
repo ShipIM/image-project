@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class UploadImageResponse {
 
-    @Schema(description = "File ID", format = "uuid", type = "string")
+    @Schema(description = "ИД файла", format = "uuid", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     private String imageId;
 
 }

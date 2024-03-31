@@ -1,7 +1,7 @@
 package com.example.imageproject.controller;
 
 import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.GetImageResponse;
+import com.example.imageproject.dto.image.GetImagesResponse;
 import com.example.imageproject.dto.image.ImageResponse;
 import com.example.imageproject.dto.image.UploadImageResponse;
 import com.example.imageproject.service.ImageService;
@@ -16,6 +16,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +30,6 @@ import java.util.Objects;
 @Tag(name = "Image Controller", description = "Basic CRUD API for working with images")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
 @Validated
 public class ImageController {
 
@@ -40,25 +40,24 @@ public class ImageController {
     @Value("${file.allowed-format}")
     private String[] formats;
 
-    @Operation(summary = "Uploading a new image to the system", operationId = "uploadImage")
+    @Operation(summary = "Загрузка нового изображения в систему", operationId = "uploadImage")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success of the operation",
+            @ApiResponse(responseCode = "200", description = "Успех выполнения операции",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ImageResponse.class))),
-            @ApiResponse(responseCode = "400", description = "The file was not validated",
+                            schema = @Schema(implementation = UploadImageResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Файл не прошел валидацию",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class))),
-            @ApiResponse(responseCode = "500", description = "Unexpected error",
+            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class)))
     })
-    @PostMapping("/image")
+    @PostMapping(value = "/image", produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('IMAGE_UPLOAD_PRIVILEGE')")
     public UploadImageResponse uploadImage(
             @Schema(type = "string", format = "binary")
-            @RequestBody
-            @NotNull(message = "File must not be empty")
-            MultipartFile file) {
+            @RequestPart("file") MultipartFile file) {
         var fileName = file.getOriginalFilename();
 
         if (file.getSize() > fileSize) {
@@ -73,18 +72,18 @@ public class ImageController {
         return imageService.saveImage(file);
     }
 
-    @Operation(summary = "Downloading a file by ID", operationId = "downloadImage")
+    @Operation(summary = "Скачивание файла по ИД", operationId = "downloadImage")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success of the operation",
+            @ApiResponse(responseCode = "200", description = "Успех выполнения операции",
                     content = @Content(mediaType = "*/*", schema = @Schema(type = "string", format = "binary"))),
-            @ApiResponse(responseCode = "404", description = "The file was not found in the system or is unavailable",
+            @ApiResponse(responseCode = "404", description = "Файл не найден в системе или недоступен",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class))),
-            @ApiResponse(responseCode = "500", description = "Unexpected error",
+            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class)))
     })
-    @GetMapping(value = "/image/{image-id}")
+    @GetMapping(value = "/image/{image-id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('IMAGE_DOWNLOAD_PRIVILEGE')")
     public ResponseEntity<Resource> downloadImage(
             @Schema(type = "string", format = "uuid")
@@ -93,19 +92,19 @@ public class ImageController {
         return imageService.download(imageId);
     }
 
-    @Operation(summary = "Deleting a file by ID", operationId = "deleteImage")
+    @Operation(summary = "Удаление файла по ИД", operationId = "deleteImage")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success of the operation",
+            @ApiResponse(responseCode = "200", description = "Успех выполнения операции",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class))),
-            @ApiResponse(responseCode = "404", description = "The file was not found in the system or is unavailable",
+            @ApiResponse(responseCode = "404", description = "Файл не найден в системе или недоступен",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class))),
-            @ApiResponse(responseCode = "500", description = "Unexpected error",
+            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class)))
     })
-    @DeleteMapping("/image/{image-id}")
+    @DeleteMapping(value = "/image/{image-id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('IMAGE_DELETE_PRIVILEGE')")
     public UiSuccessContainer deleteImage(
             @Schema(type = "string", format = "uuid")
@@ -114,16 +113,16 @@ public class ImageController {
         return imageService.delete(imageId);
     }
 
-    @Operation(summary = "Getting a list of images that are available to the user", operationId = "getImages")
+    @Operation(summary = "Получение списка изображений, которые доступны пользователю", operationId = "getImages")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success of the operation",
+            @ApiResponse(responseCode = "200", description = "Успех выполнения операции",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = GetImageResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Unexpected error",
+                            schema = @Schema(implementation = GetImagesResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UiSuccessContainer.class)))
     })
-    @GetMapping("/images")
+    @GetMapping(value = "/images", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('IMAGE_READ_PRIVILEGE')")
     public List<ImageResponse> getImages() {
         return imageService.getAllMeta();

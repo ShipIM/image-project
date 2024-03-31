@@ -12,10 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UiSuccessContainer {
 
-    @Schema(description = "A sign of success", type = "boolean")
+    @Schema(description = "Признак успеха", type = "boolean", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean success;
 
-    @Schema(description = "Error message", type = "string")
+    @Schema(description = "Сообщение об ошибке", type = "string")
     private String message;
 
 }

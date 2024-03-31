@@ -6,15 +6,17 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(name = "Image")
 public class ImageResponse {
 
-    @Schema(description = "File ID", format = "uuid", type = "string")
+    @Schema(description = "ИД файла", format = "uuid", type = "string")
     private String imageId;
 
-    @Schema(description = "Image name", type = "string")
+    @Schema(description = "Название изображения", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     private String filename;
 
-    @Schema(description = "File size in bytes", format = "int32", type = "integer")
+    @Schema(description = "Размер файла в байтах", format = "int32", type = "integer",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer size;
 
 }
