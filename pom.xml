@@ -193,6 +193,7 @@
                             <oldSpec>${project.basedir}/spec/specification.yaml</oldSpec>
                             <newSpec>${project.basedir}/target/swagger.json</newSpec>
                             <jsonOutputFileName>${project.basedir}/target/diff.json</jsonOutputFileName>
+                            <failOnIncompatible>true</failOnIncompatible>
                         </configuration>
                     </execution>
                 </executions>
