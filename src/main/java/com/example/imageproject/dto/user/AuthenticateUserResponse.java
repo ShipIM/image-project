@@ -15,7 +15,7 @@ public class AuthenticateUserResponse {
     @Schema(description = "User role", type = "string")
     private RoleEnum role;
 
-    @Schema(description = "jwt access token", type = "string")
+    @Schema(description = "jwt access token", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     private String access;
 
 }

@@ -10,12 +10,12 @@ import lombok.Setter;
 @Setter
 public class AuthenticateUserRequest {
 
-    @Schema(description = "username", type = "string")
+    @Schema(description = "username", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     @Size(min = 1, max = 16, message = "incorrect username size")
     @NotBlank(message = "username must not be empty")
     private String username;
 
-    @Schema(description = "password", type = "string")
+    @Schema(description = "password", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     @Size(min = 8, max = 16, message = "incorrect password size")
     @NotBlank(message = "password must not be empty")
     private String password;
