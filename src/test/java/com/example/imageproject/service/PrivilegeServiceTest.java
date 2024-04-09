@@ -38,10 +38,12 @@ public class PrivilegeServiceTest extends BaseTest {
         return Stream.of(
                 Arguments.of("ROLE_USER",
                         List.of(PrivilegeEnum.IMAGE_UPLOAD_PRIVILEGE, PrivilegeEnum.IMAGE_DOWNLOAD_PRIVILEGE,
-                                PrivilegeEnum.IMAGE_READ_PRIVILEGE, PrivilegeEnum.IMAGE_DELETE_PRIVILEGE)),
+                                PrivilegeEnum.IMAGE_READ_PRIVILEGE, PrivilegeEnum.IMAGE_DELETE_PRIVILEGE,
+                                PrivilegeEnum.FILTER_APPLY_PRIVILEGE, PrivilegeEnum.FILTER_READ_PRIVILEGE)),
                 Arguments.of("ROLE_ADMIN",
                         List.of(PrivilegeEnum.IMAGE_UPLOAD_PRIVILEGE, PrivilegeEnum.IMAGE_DOWNLOAD_PRIVILEGE,
                                 PrivilegeEnum.IMAGE_READ_PRIVILEGE, PrivilegeEnum.IMAGE_DELETE_PRIVILEGE,
+                                PrivilegeEnum.FILTER_APPLY_PRIVILEGE, PrivilegeEnum.FILTER_READ_PRIVILEGE,
                                 PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE))
         );
     }
