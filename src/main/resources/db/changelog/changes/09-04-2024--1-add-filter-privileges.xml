@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="ShipIM" id="09-04-2024--1-add-filter-privileges">
+        <insert tableName="privilege">
+            <column name="name" value="FILTER_APPLY_PRIVILEGE"/>
+        </insert>
+        <insert tableName="privilege">
+            <column name="name" value="FILTER_READ_PRIVILEGE"/>
+        </insert>
+        <insert tableName="role_privilege">
+            <column name="role_id" value="2"/>
+            <column name="privilege_id" value="6"/>
+        </insert>
+        <insert tableName="role_privilege">
+            <column name="role_id" value="2"/>
+            <column name="privilege_id" value="7"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

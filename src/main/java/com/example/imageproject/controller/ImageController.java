@@ -26,10 +26,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@Tag(name = "Image Controller", description = "Basic CRUD API for working with images")
+@Tag(name = "Image Controller", description = "Базовый CRUD API для работы с картинками")
 @RestController
-@RequiredArgsConstructor
 @Validated
+@RequiredArgsConstructor
 public class ImageController {
 
     private final ImageService imageService;

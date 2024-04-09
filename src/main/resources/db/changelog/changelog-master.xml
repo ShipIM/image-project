@@ -14,4 +14,5 @@
     <include file="/db/changelog/changes/23-03-2024--9-create-role-role.xml"/>
     <include file="/db/changelog/changes/23-03-2024--10-create-admin.xml"/>
     <include file="/db/changelog/changes/23-03-2024--11-create-image-table.xml"/>
+    <include file="/db/changelog/changes/09-04-2024--1-add-filter-privileges.xml"/>
 </databaseChangeLog>

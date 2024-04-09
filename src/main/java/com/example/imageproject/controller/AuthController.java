@@ -15,9 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Auth controller", description = "Basic API for working registration and authentication")
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Auth controller", description = "Basic API for working registration and authentication")
 public class AuthController {
 
     private final AuthService authService;
