@@ -145,6 +145,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UiSuccessContainer'
+  /image/{image-id}/filters/apply:
+    post:
+      tags:
+        - Image Filters Controller
+      summary: Применение указанных фильтров к изображению
+      description: |
+        В рамках данного метода необходимо:
+        1. Проверить, есть ли у пользователя доступ к файлу
+        1. Сохранить в БД новый запрос на изменение файла:
+            1. статус = WIP
+            2. ИД оригинальной картинки = ИД оригинального файла
+            3. ИД измененной картинки = null
+            4. ИД запроса = уникальный ИД запроса в системе
+        1. Отправить в Kafka событие о создании запроса
+        1. Убедиться, что шаг 3 выполнен успешно, в противном случае выполнить повторную попытку
+        1. Вернуть пользователю ИД его запроса
+      operationId: applyImageFilters
+      parameters:
+        - name: image-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: filters
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                # Приведенные ниже фильтры представлены в ознакомительных целях,
+                # тут вы можете вставить все, что душе угодно
+                - REVERS_COLORS
+                - CROP
+                - REMOVE_BACKGROUND
+                - OTHER
+      responses:
+        '200':
+          description: Успех выполнения операции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplyImageFiltersResponse'
+        '404':
+          description: Файл не найден в системе или недоступен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UiSuccessContainer'
+        '500':
+          description: Непредвиденная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UiSuccessContainer'
+  /image/{image-id}/filters/{request-id}:
+    get:
+      tags:
+        - Image Filters Controller
+      summary: Получение ИД измененного файла по ИД запроса
+      description: |
+        В рамках данного метода необходимо найти и вернуть по ИД пользовательского запроса 
+        ИД соответсвующего ему файла и статус, в котором находится процесс применения фильтров.
+        По ИД оригинального изображения нужно убедиться, что ИД запроса относится к нему и 
+        что у пользователя есть доступ к данному изображению (оригинальному).
+      operationId: getModifiedImageByRequestId
+      parameters:
+        - name: image-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: request-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успех выполнения операции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetModifiedImageByRequestIdResponse'
+        '404':
+          description: Файл не найден в системе или недоступен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UiSuccessContainer'
+        '500':
+          description: Непредвиденная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UiSuccessContainer'
 components:
   schemas:
     UiSuccessContainer:
@@ -194,3 +294,28 @@ components:
           type: integer
           format: int32
           description: Размер файла в байтах
+    ApplyImageFiltersResponse:
+      required:
+        - requestId
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          description: ИД запроса в системе
+    GetModifiedImageByRequestIdResponse:
+      required:
+        - imageId
+        - status
+      type: object
+      properties:
+        imageId:
+          type: string
+          format: uuid
+          description: ИД модифицированного или оригинального файла в случае отсутствия первого
+        status:
+          type: string
+          enum:
+            - WIP
+            - DONE
+          description: Статус обработки файла
