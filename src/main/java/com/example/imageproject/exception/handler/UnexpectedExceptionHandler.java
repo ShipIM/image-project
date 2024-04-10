@@ -1,6 +1,6 @@
 package com.example.imageproject.exception.handler;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,7 @@ public class UnexpectedExceptionHandler {
     @ExceptionHandler(value = RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public UiSuccessContainer handleInternalException(Exception exception) {
+        exception.printStackTrace();
         return new UiSuccessContainer(false, "An unexpected exception has occurred");
     }
 

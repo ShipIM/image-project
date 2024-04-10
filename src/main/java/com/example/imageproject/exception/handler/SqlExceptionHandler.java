@@ -1,6 +1,6 @@
 package com.example.imageproject.exception.handler;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

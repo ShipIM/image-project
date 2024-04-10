@@ -1,8 +1,8 @@
 package com.example.imageproject.service;
 
-import com.example.imageproject.dto.mapper.UserMapper;
-import com.example.imageproject.dto.user.AuthenticateUserRequest;
-import com.example.imageproject.dto.user.AuthenticateUserResponse;
+import com.example.imageproject.dto.rest.mapper.UserMapper;
+import com.example.imageproject.dto.rest.user.AuthenticateUserRequest;
+import com.example.imageproject.dto.rest.user.AuthenticateUserResponse;
 import com.example.imageproject.model.entity.User;
 import com.example.imageproject.util.JwtUtils;
 import lombok.RequiredArgsConstructor;

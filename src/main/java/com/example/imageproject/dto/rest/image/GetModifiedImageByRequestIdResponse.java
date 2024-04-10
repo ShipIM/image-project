@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.image;
+package com.example.imageproject.dto.rest.image;
 
 import com.example.imageproject.model.enumeration.ImageStatus;
 import io.swagger.v3.oas.annotations.media.Schema;

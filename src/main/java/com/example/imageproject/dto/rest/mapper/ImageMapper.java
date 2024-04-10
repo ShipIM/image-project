@@ -1,7 +1,7 @@
-package com.example.imageproject.dto.mapper;
+package com.example.imageproject.dto.rest.mapper;
 
-import com.example.imageproject.dto.image.ImageResponse;
-import com.example.imageproject.dto.image.UploadImageResponse;
+import com.example.imageproject.dto.rest.image.ImageResponse;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
 import com.example.imageproject.model.entity.Image;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

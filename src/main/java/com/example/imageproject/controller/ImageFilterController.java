@@ -1,15 +1,18 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.ApplyImageFiltersResponse;
-import com.example.imageproject.dto.image.GetModifiedImageByRequestIdResponse;
+import com.example.imageproject.dto.kafka.image.ImageFilter;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.ApplyImageFiltersResponse;
+import com.example.imageproject.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageproject.model.enumeration.FilterType;
+import com.example.imageproject.service.ImageFilterProducer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Arrays;
 
 @Tag(name = "Image Filters Controller",
         description = "Базовый CRUD API для работы с пользовательскими запросами на редактирование картинок")
@@ -27,6 +30,8 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class ImageFilterController {
+
+    private final ImageFilterProducer imageFilterProducer;
 
     @Operation(summary = "Применение указанных фильтров к изображению", operationId = "applyImageFilters")
     @ApiResponses(value = {
@@ -45,8 +50,16 @@ public class ImageFilterController {
     public ApplyImageFiltersResponse applyFilter(
             @Schema(type = "string", format = "uuid")
             @PathVariable("image-id") String image,
-            List<FilterType> filters) {
-       return null;
+            String[] filters) {
+        try {
+            var resolvedFilters = Arrays.stream(filters).map(FilterType::valueOf).toList();
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Some specified filters do not exist");
+        }
+
+        imageFilterProducer.send(new ImageFilter());
+
+        return null;
     }
 
     @Operation(summary = "Получение ИД измененного файла по ИД запроса", operationId = "getModifiedImageByRequestId")

@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.image;
+package com.example.imageproject.dto.rest.image;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;

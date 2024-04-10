@@ -14,7 +14,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ImageFilter {
+public class FilterRequest {
 
     @Id
     private Long id;

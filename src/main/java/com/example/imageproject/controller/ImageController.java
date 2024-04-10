@@ -1,9 +1,9 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.GetImagesResponse;
-import com.example.imageproject.dto.image.ImageResponse;
-import com.example.imageproject.dto.image.UploadImageResponse;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.GetImagesResponse;
+import com.example.imageproject.dto.rest.image.ImageResponse;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
 import com.example.imageproject.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

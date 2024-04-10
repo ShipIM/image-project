@@ -1,8 +1,8 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.user.AuthenticateUserRequest;
-import com.example.imageproject.dto.user.AuthenticateUserResponse;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.user.AuthenticateUserRequest;
+import com.example.imageproject.dto.rest.user.AuthenticateUserResponse;
 import com.example.imageproject.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

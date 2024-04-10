@@ -1,8 +1,8 @@
 package com.example.imageproject.controller;
 
 import com.example.imageproject.config.BaseTest;
-import com.example.imageproject.dto.user.AuthenticateUserRequest;
-import com.example.imageproject.dto.user.AuthenticateUserResponse;
+import com.example.imageproject.dto.rest.user.AuthenticateUserRequest;
+import com.example.imageproject.dto.rest.user.AuthenticateUserResponse;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;

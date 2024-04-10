@@ -1,9 +1,9 @@
 package com.example.imageproject.service;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.ImageResponse;
-import com.example.imageproject.dto.image.UploadImageResponse;
-import com.example.imageproject.dto.mapper.ImageMapper;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.ImageResponse;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
+import com.example.imageproject.dto.rest.mapper.ImageMapper;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.exception.IllegalAccessException;
 import com.example.imageproject.model.entity.User;

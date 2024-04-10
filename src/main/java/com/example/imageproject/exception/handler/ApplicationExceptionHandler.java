@@ -1,6 +1,6 @@
 package com.example.imageproject.exception.handler;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.exception.IllegalAccessException;
 import org.springframework.core.Ordered;
