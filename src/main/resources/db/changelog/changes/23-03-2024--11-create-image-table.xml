@@ -19,6 +19,7 @@
             </column>
             <column name="image_id" type="VARCHAR">
                 <constraints
+                        unique="true"
                         nullable="false"/>
             </column>
             <column name="user_id" type="BIGINT">

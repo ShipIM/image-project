@@ -19,15 +19,18 @@ public class FilterRequest {
     @Id
     private Long id;
 
-    private ImageStatus status;
+    private ImageStatus status = ImageStatus.WIP;
 
     @Column("original_image_id")
-    private String original;
+    private String originalId;
 
     @Column("modified_image_id")
-    private String modified;
+    private String modifiedId;
 
     @Column("request_id")
-    private String request;
+    private String requestId;
+
+    @Column("user_id")
+    private Long userId;
 
 }

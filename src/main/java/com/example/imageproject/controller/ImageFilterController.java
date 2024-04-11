@@ -1,12 +1,12 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.kafka.image.ImageFilter;
 import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import com.example.imageproject.dto.rest.image.ApplyImageFiltersResponse;
 import com.example.imageproject.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageproject.model.enumeration.FilterType;
-import com.example.imageproject.service.ImageFilterProducer;
+import com.example.imageproject.service.FilterRequestService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class ImageFilterController {
 
-    private final ImageFilterProducer imageFilterProducer;
+    private final FilterRequestService filterRequestService;
 
     @Operation(summary = "Применение указанных фильтров к изображению", operationId = "applyImageFilters")
     @ApiResponses(value = {
@@ -49,17 +49,16 @@ public class ImageFilterController {
     @PreAuthorize("hasAuthority('FILTER_APPLY_PRIVILEGE')")
     public ApplyImageFiltersResponse applyFilter(
             @Schema(type = "string", format = "uuid")
-            @PathVariable("image-id") String image,
+            @PathVariable("image-id") String imageId,
+            @ArraySchema(schema = @Schema(implementation = FilterType.class))
             String[] filters) {
         try {
             var resolvedFilters = Arrays.stream(filters).map(FilterType::valueOf).toList();
+
+            return filterRequestService.createRequest(imageId, resolvedFilters);
         } catch (IllegalArgumentException e) {
             throw new ValidationException("Some specified filters do not exist");
         }
-
-        imageFilterProducer.send(new ImageFilter());
-
-        return null;
     }
 
     @Operation(summary = "Получение ИД измененного файла по ИД запроса", operationId = "getModifiedImageByRequestId")
@@ -78,10 +77,10 @@ public class ImageFilterController {
     @PreAuthorize("hasAuthority('FILTER_READ_PRIVILEGE')")
     public GetModifiedImageByRequestIdResponse getModifiedImage(
             @Schema(type = "string", format = "uuid")
-            @PathVariable("image-id") String image,
+            @PathVariable("image-id") String imageId,
             @Schema(type = "string", format = "uuid")
-            @PathVariable("request-id") String request) {
-        return null;
+            @PathVariable("request-id") String requestId) {
+        return filterRequestService.getRequest(requestId, imageId);
     }
 
 }

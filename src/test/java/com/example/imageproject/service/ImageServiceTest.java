@@ -94,6 +94,7 @@ public class ImageServiceTest extends BaseTest {
         retrievedImage.setUserId(-1L);
         retrievedImage.setFilename("file.jpeg");
 
+        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-2L));
         Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.of(retrievedImage));
         Mockito.when(minioService.download(Mockito.any())).thenReturn("content".getBytes());
 
@@ -114,6 +115,7 @@ public class ImageServiceTest extends BaseTest {
         retrievedImage.setUserId(-1L);
         retrievedImage.setFilename("file.png");
 
+        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-1L));
         Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.of(retrievedImage));
         Mockito.when(minioService.download(Mockito.any())).thenReturn("content".getBytes());
 
@@ -130,17 +132,14 @@ public class ImageServiceTest extends BaseTest {
         var authentication = new UsernamePasswordAuthenticationToken(user, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        var retrievedImage = new Image();
-        retrievedImage.setUserId(-2L);
-
-        Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.of(retrievedImage));
+        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-2L));
 
         Assertions.assertThrows(IllegalAccessException.class, () -> imageService.download(Mockito.any()));
     }
 
     @Test
     public void downloadFile_NoFile() {
-        Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.empty());
 
         Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.download(Mockito.any()));
     }

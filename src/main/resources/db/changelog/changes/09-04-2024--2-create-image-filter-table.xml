@@ -23,6 +23,18 @@
                         unique="true"
                         nullable="false"/>
             </column>
+            <column name="user_id" type="BIGINT">
+                <constraints
+                        nullable="false"/>
+            </column>
         </createTable>
+        <addForeignKeyConstraint baseTableName="image_filter" baseColumnNames="original_image_id"
+                                 constraintName="fk_image_filter_original_image"
+                                 referencedTableName="image" referencedColumnNames="image_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="image_filter" baseColumnNames="user_id"
+                                 constraintName="fk_image_filter_user"
+                                 referencedTableName="_user" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
     </changeSet>
 </databaseChangeLog>

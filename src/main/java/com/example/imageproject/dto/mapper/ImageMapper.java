@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.rest.mapper;
+package com.example.imageproject.dto.mapper;
 
 import com.example.imageproject.dto.rest.image.ImageResponse;
 import com.example.imageproject.dto.rest.image.UploadImageResponse;
