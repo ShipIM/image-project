@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ValidationException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +52,7 @@ public class ImageFilterController {
             @Schema(type = "string", format = "uuid")
             @PathVariable("image-id") String imageId,
             @ArraySchema(schema = @Schema(implementation = FilterType.class))
-            String[] filters) {
+            @NotNull(message = "At least 1 filter must be specified") String[] filters) {
         try {
             var resolvedFilters = Arrays.stream(filters).map(FilterType::valueOf).toList();
 
