@@ -43,16 +43,16 @@ public class ImageService {
         return imageMapper.toUploadResponse(imageId);
     }
 
-    public void saveImage(String originalImageId, String modifiedImageId) {
+    public Image saveImage(String originalImageId, String modifiedImageId) {
+        if (imageRepository.existsByImageId(modifiedImageId)) {
+            return getImageByImageId(modifiedImageId);
+        }
+
         var originalImage = getImageByImageId(originalImageId);
         var bytes = minioService.download(modifiedImageId);
 
-        if (imageRepository.existsByImageId(modifiedImageId)) {
-            return;
-        }
-
-        imageRepository.save(imageMapper.toImage(originalImage.getFilename(), (long) bytes.length, modifiedImageId,
-                originalImage.getUserId()));
+        return imageRepository.save(imageMapper.toImage(originalImage.getFilename(), (long) bytes.length,
+                modifiedImageId, originalImage.getUserId()));
     }
 
     public List<ImageResponse> getAllMeta() {

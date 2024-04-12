@@ -6,6 +6,7 @@ import com.example.imageproject.exception.IllegalAccessException;
 import com.example.imageproject.model.entity.Image;
 import com.example.imageproject.model.entity.User;
 import com.example.imageproject.model.enumeration.PrivilegeEnum;
+import com.example.imageproject.model.enumeration.RoleEnum;
 import com.example.imageproject.repository.ImageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,33 +18,75 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.Optional;
 
+@Transactional
 public class ImageServiceTest extends BaseTest {
 
     @Autowired
     private ImageService imageService;
-    @MockBean
+    @Autowired
     private ImageRepository imageRepository;
     @MockBean
     private MinioService minioService;
 
     @Test
-    public void saveImage() {
-        var authentication = new UsernamePasswordAuthenticationToken(new User(), null);
+    public void saveImage_MultipartFile() {
+        var userId = 1L;
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, null), null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        var multipartFile = new MockMultipartFile("file.txt", "content".getBytes());
 
-        Mockito.when(imageRepository.save(Mockito.any())).thenReturn(new Image());
+        var content = "content";
+        var multipartFile = new MockMultipartFile("file.txt", content.getBytes());
+
         Mockito.doNothing().when(minioService).upload(Mockito.any(), Mockito.any());
 
         var response = imageService.saveImage(multipartFile);
+        var image = imageService.getImageByImageId(response.getImageId());
 
         Assertions.assertAll(
                 () -> Assertions.assertNotNull(response.getImageId()),
-                () -> Assertions.assertTrue(response.getImageId().matches("[0-9a-f\\-]+"))
+                () -> Assertions.assertTrue(response.getImageId().matches("[0-9a-f\\-]+")),
+                () -> Assertions.assertTrue(imageRepository.existsByImageId(response.getImageId())),
+                () -> Assertions.assertEquals(userId, image.getUserId()),
+                () -> Assertions.assertEquals(content.getBytes().length, image.getSize())
+        );
+    }
+
+    @Test
+    public void saveImage_ImageIds_modifiedImageExists() {
+        var imageId = "imageId";
+        var image = new Image(null, "filename", 1L, imageId, 1L);
+        imageRepository.save(image);
+
+        imageService.saveImage(imageId, imageId);
+
+        Mockito.verify(minioService, Mockito.never()).download(Mockito.any());
+    }
+
+    @Test
+    public void saveImage_ImageIds_modifiedImageNotExists() {
+        var imageId = "imageId";
+        var imageSize = 1;
+        var userId = 1L;
+        var image = new Image(null, "filename", (long) imageSize, imageId, userId);
+        imageRepository.save(image);
+
+        var modifiedId = "newImage";
+        Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[imageSize]);
+
+        var modified = imageService.saveImage(imageId, modifiedId);
+
+        Mockito.verify(minioService, Mockito.times(1)).download(Mockito.any());
+
+        Assertions.assertAll(
+                () -> Assertions.assertTrue(imageRepository.existsByImageId(modifiedId)),
+                () -> Assertions.assertEquals(modifiedId, modified.getImageId()),
+                () -> Assertions.assertEquals(imageSize, modified.getSize()),
+                () -> Assertions.assertEquals(userId, modified.getUserId())
         );
     }
 
@@ -56,96 +99,92 @@ public class ImageServiceTest extends BaseTest {
         var authentication = new UsernamePasswordAuthenticationToken(user, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Mockito.when(imageRepository.findAll()).thenReturn(Collections.emptyList());
-        Mockito.when(imageRepository.findAllByUserId(Mockito.any())).thenReturn(Collections.emptyList());
+        var imageId = "imageId";
+        var userId = 1L;
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
 
-        imageService.getAllMeta();
+        var result = imageService.getAllMeta();
 
-        Mockito.verify(imageRepository, Mockito.times(1)).findAll();
-        Mockito.verify(imageRepository, Mockito.never()).findAllByUserId(Mockito.any());
+        Assertions.assertAll(
+                () -> Assertions.assertFalse(result.isEmpty()),
+                () -> Assertions.assertEquals(imageId, result.get(0).getImageId())
+        );
     }
 
     @Test
-    public void getAllMeta_NoFullAccess() {
-        var user = new User();
-        user.setAuthorities(Collections.emptyList());
-        var authentication = new UsernamePasswordAuthenticationToken(user, null);
+    public void getAllMeta_NoFullAccess_HasImages() {
+        var userId = 1L;
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Mockito.when(imageRepository.findAll()).thenReturn(Collections.emptyList());
-        Mockito.when(imageRepository.findAllByUserId(Mockito.any())).thenReturn(Collections.emptyList());
+        var imageId = "imageId";
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
 
-        imageService.getAllMeta();
+        var result = imageService.getAllMeta();
 
-        Mockito.verify(imageRepository, Mockito.never()).findAll();
-        Mockito.verify(imageRepository, Mockito.times(1)).findAllByUserId(Mockito.any());
+        Assertions.assertAll(
+                () -> Assertions.assertFalse(result.isEmpty()),
+                () -> Assertions.assertEquals(imageId, result.get(0).getImageId())
+        );
     }
 
     @Test
-    public void downloadFile_FullAccess() {
-        var user = new User();
-        user.setAuthorities(Collections.singletonList(
-                new SimpleGrantedAuthority(PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name())
-        ));
-        var authentication = new UsernamePasswordAuthenticationToken(user, null);
+    public void getAllMeta_NoFullAccess_HasNoImages() {
+        var userId = 1L;
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        var retrievedImage = new Image();
-        retrievedImage.setUserId(-1L);
-        retrievedImage.setFilename("file.jpeg");
+        var result = imageService.getAllMeta();
 
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-2L));
-        Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.of(retrievedImage));
-        Mockito.when(minioService.download(Mockito.any())).thenReturn("content".getBytes());
-
-        var response = imageService.download(Mockito.any());
-
-        Assertions.assertEquals(response.getHeaders().getContentType(), MediaType.IMAGE_JPEG);
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
     public void downloadFile_HasAccess() {
         var user = new User();
-        user.setAuthorities(Collections.emptyList());
-        user.setId(-1L);
+        user.setAuthorities(Collections.singletonList(
+                new SimpleGrantedAuthority(PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name())
+        ));
         var authentication = new UsernamePasswordAuthenticationToken(user, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        var retrievedImage = new Image();
-        retrievedImage.setUserId(-1L);
-        retrievedImage.setFilename("file.png");
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
 
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-1L));
-        Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.of(retrievedImage));
-        Mockito.when(minioService.download(Mockito.any())).thenReturn("content".getBytes());
+        Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
 
-        var response = imageService.download(Mockito.any());
+        var response = imageService.download(imageId);
 
-        Assertions.assertEquals(response.getHeaders().getContentType(), MediaType.IMAGE_PNG);
+        Assertions.assertEquals(MediaType.IMAGE_JPEG, response.getHeaders().getContentType());
     }
 
     @Test
-    public void downloadFile_NoAccess() {
-        var user = new User();
-        user.setId(-1L);
-        user.setAuthorities(Collections.emptyList());
-        var authentication = new UsernamePasswordAuthenticationToken(user, null);
+    public void downloadFile_HasNoAccess() {
+        var authentication = new UsernamePasswordAuthenticationToken(new User(2L, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-2L));
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
 
-        Assertions.assertThrows(IllegalAccessException.class, () -> imageService.download(Mockito.any()));
+        Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
+
+        Assertions.assertThrows(IllegalAccessException.class, () -> imageService.download(imageId));
     }
 
     @Test
     public void downloadFile_NoFile() {
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.empty());
-
-        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.download(Mockito.any()));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.download("imageId"));
     }
 
     @Test
-    public void deleteFile_FullAccess() {
+    public void deleteFile_HasAccess() {
         var user = new User();
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority(PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name())
@@ -153,54 +192,103 @@ public class ImageServiceTest extends BaseTest {
         var authentication = new UsernamePasswordAuthenticationToken(user, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-1L));
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
+
         Mockito.doNothing().when(minioService).delete(Mockito.any());
 
-        var response = imageService.delete(Mockito.any());
+        var response = imageService.delete(imageId);
 
         Assertions.assertAll(
+                () -> Assertions.assertFalse(imageRepository.existsByImageId(imageId)),
                 () -> Assertions.assertTrue(response.getSuccess()),
-                () -> Assertions.assertEquals(response.getMessage(), "The image was successfully deleted")
+                () -> Assertions.assertEquals("The image was successfully deleted", response.getMessage())
         );
     }
 
     @Test
-    public void deleteFile_HasAccess() {
-        var user = new User();
-        user.setAuthorities(Collections.emptyList());
-        user.setId(-1L);
-        var authentication = new UsernamePasswordAuthenticationToken(user, null);
+    public void deleteFile_HasNoAccess() {
+        var authentication = new UsernamePasswordAuthenticationToken(new User(2L, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-1L));
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
+
         Mockito.doNothing().when(minioService).delete(Mockito.any());
 
-        var response = imageService.delete(Mockito.any());
-
-        Assertions.assertAll(
-                () -> Assertions.assertTrue(response.getSuccess()),
-                () -> Assertions.assertEquals(response.getMessage(), "The image was successfully deleted")
-        );
-    }
-
-    @Test
-    public void deleteFile_NoAccess() {
-        var user = new User();
-        user.setId(-1L);
-        user.setAuthorities(Collections.emptyList());
-        var authentication = new UsernamePasswordAuthenticationToken(user, null);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        Mockito.when(imageRepository.findUserByImageId(Mockito.any())).thenReturn(Optional.of(-2L));
-
-        Assertions.assertThrows(IllegalAccessException.class, () -> imageService.delete(Mockito.any()));
+        Assertions.assertThrows(IllegalAccessException.class, () -> imageService.delete(imageId));
     }
 
     @Test
     public void deleteFile_NoFile() {
-        Mockito.when(imageRepository.findByImageId(Mockito.any())).thenReturn(Optional.empty());
+        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.delete("imageId"));
+    }
 
-        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.delete(Mockito.any()));
+    @Test
+    public void validateAccess_HasAccess() {
+        var userId = 1L;
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        Assertions.assertTrue(imageService.validateAccess(imageId));
+    }
+
+    @Test
+    public void validateAccess_HasNoAccess() {
+        var authentication = new UsernamePasswordAuthenticationToken(new User(2L, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
+
+        Assertions.assertFalse(imageService.validateAccess(imageId));
+    }
+
+    @Test
+    public void validateAccess_HasFullAccess() {
+        var user = new User();
+        user.setAuthorities(Collections.singletonList(
+                new SimpleGrantedAuthority(PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name())
+        ));
+        var authentication = new UsernamePasswordAuthenticationToken(user, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        imageRepository.save(image);
+
+        Assertions.assertTrue(imageService.validateAccess(imageId));
+    }
+
+    @Test
+    public void validateAccess_NoFile() {
+        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.download("imageId"));
+    }
+
+    @Test
+    public void getImageByImageId_ImageExists() {
+        var imageId = "imageId";
+        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        image = imageRepository.save(image);
+
+        var result = imageService.getImageByImageId(imageId);
+
+        Assertions.assertEquals(image, result);
+    }
+
+    @Test
+    public void getImageByImageId_ImageNotExists() {
+        Assertions.assertThrows(EntityNotFoundException.class, () -> imageService.getImageByImageId("imageId"));
     }
 
 }
