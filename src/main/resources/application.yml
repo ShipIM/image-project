@@ -12,7 +12,6 @@ spring:
     password: postgres
     driver-class-name: org.postgresql.Driver
   kafka:
-    listener.ack-mode: manual
     bootstrap-servers:
       - localhost:9092
       - localhost:9093
