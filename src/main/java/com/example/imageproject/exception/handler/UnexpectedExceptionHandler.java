@@ -15,7 +15,6 @@ public class UnexpectedExceptionHandler {
     @ExceptionHandler(value = RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public UiSuccessContainer handleInternalException(RuntimeException exception) {
-        exception.printStackTrace();
         return new UiSuccessContainer(false, "An unexpected exception has occurred");
     }
 

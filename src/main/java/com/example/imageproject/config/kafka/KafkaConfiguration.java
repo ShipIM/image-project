@@ -1,7 +1,7 @@
 package com.example.imageproject.config.kafka;
 
-import com.example.imageproject.dto.kafka.image.ImageFilter;
 import com.example.imageproject.dto.kafka.image.ImageDone;
+import com.example.imageproject.dto.kafka.image.ImageFilter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
@@ -56,23 +57,28 @@ public class KafkaConfiguration {
 
     @Bean
     public KafkaTemplate<String, ImageFilter> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+        return new KafkaTemplate<>(imageFilterProducerFactory());
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ImageDone> kafkaListenerContainerFactory() {
+    @Bean("imageDoneKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, ImageDone> imageDoneKafkaListenerContainerFactory() {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, ImageDone>();
-        factory.setConsumerFactory(consumerFactory());
+
+        factory.setConsumerFactory(imageDoneConsumerFactory());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
     }
 
-    private ProducerFactory<String, ImageFilter> producerFactory() {
-       return new DefaultKafkaProducerFactory<>(producerProps());
+    private ProducerFactory<String, ImageFilter> imageFilterProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerProps());
     }
 
-    private ConsumerFactory<String, ImageDone> consumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(consumerProps());
+    private ConsumerFactory<String, ImageDone> imageDoneConsumerFactory() {
+        var props = consumerProps();
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.imageproject.dto.kafka.image.ImageDone");
+
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     private Map<String, Object> adminProps() {
@@ -103,6 +109,8 @@ public class KafkaConfiguration {
 
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 

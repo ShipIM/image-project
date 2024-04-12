@@ -28,4 +28,6 @@ public interface ImageRepository extends CrudRepository<Image, Long> {
 
     List<Image> findAll();
 
+    boolean existsByImageId(String imageId);
+
 }

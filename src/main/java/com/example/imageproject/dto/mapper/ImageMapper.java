@@ -15,6 +15,8 @@ public interface ImageMapper {
     @Mapping(target = "filename", expression = "java(file.getOriginalFilename())")
     Image toImage(MultipartFile file, String imageId, Long userId);
 
+    Image toImage(String filename, Long size, String imageId, Long userId);
+
     ImageResponse toResponse(Image image);
 
     Image toImage(String reference);

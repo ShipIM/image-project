@@ -12,7 +12,7 @@ import java.util.List;
 public class GetImagesResponse {
 
     @ArraySchema(schema = @Schema(implementation = ImageResponse.class, requiredMode = Schema.RequiredMode.REQUIRED),
-    arraySchema = @Schema(description = "Список изображений"))
+            arraySchema = @Schema(description = "Список изображений"))
     private List<ImageResponse> images;
 
 }

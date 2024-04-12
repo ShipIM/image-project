@@ -1,9 +1,9 @@
 package com.example.imageproject.service;
 
+import com.example.imageproject.dto.mapper.ImageMapper;
 import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import com.example.imageproject.dto.rest.image.ImageResponse;
 import com.example.imageproject.dto.rest.image.UploadImageResponse;
-import com.example.imageproject.dto.mapper.ImageMapper;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.exception.IllegalAccessException;
 import com.example.imageproject.model.entity.Image;
@@ -41,6 +41,18 @@ public class ImageService {
         minioService.upload(multipartFile, imageId);
 
         return imageMapper.toUploadResponse(imageId);
+    }
+
+    public void saveImage(String originalImageId, String modifiedImageId) {
+        var originalImage = getImageByImageId(originalImageId);
+        var bytes = minioService.download(modifiedImageId);
+
+        if (imageRepository.existsByImageId(modifiedImageId)) {
+            return;
+        }
+
+        imageRepository.save(imageMapper.toImage(originalImage.getFilename(), (long) bytes.length, modifiedImageId,
+                originalImage.getUserId()));
     }
 
     public List<ImageResponse> getAllMeta() {
