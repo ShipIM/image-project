@@ -1,10 +1,7 @@
 package com.example.imageproject.model.entity;
 
 import com.example.imageproject.model.enumeration.ImageStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -14,6 +11,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class FilterRequest {
 
     @Id

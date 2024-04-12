@@ -77,13 +77,14 @@ public class FilterRequestService {
     }
 
     public GetModifiedImageByRequestIdResponse getRequest(String requestId, String imageId) {
-        var filterRequest = getFilterRequestByRequestId(requestId);
-
         if (!imageService.validateAccess(imageId)) {
             throw new IllegalAccessException("You are not the owner of this image");
         }
 
-        return imageFilterMapper.toResponse(filterRequest);
+        var filterRequest = getFilterRequestByRequestId(requestId);
+
+        return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.WIP ?
+                filterRequest.getOriginalId() : filterRequest.getModifiedId(), filterRequest.getStatus());
     }
 
     public FilterRequest getFilterRequestByRequestId(String requestId) {

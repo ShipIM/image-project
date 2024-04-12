@@ -1,7 +1,6 @@
 package com.example.imageproject.dto.mapper;
 
 import com.example.imageproject.dto.kafka.image.ImageFilter;
-import com.example.imageproject.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageproject.model.entity.FilterRequest;
 import com.example.imageproject.model.entity.Image;
 import com.example.imageproject.model.enumeration.FilterType;
@@ -19,8 +18,5 @@ public interface FilterMapper {
 
     @Mapping(target = "imageId", source = "filterRequest.originalId")
     ImageFilter toImageFilter(FilterRequest filterRequest, List<FilterType> filters);
-
-    @Mapping(target = "imageId", source = "filterRequest.originalId")
-    GetModifiedImageByRequestIdResponse toResponse(FilterRequest filterRequest);
 
 }

@@ -10,6 +10,9 @@ import com.example.imageproject.model.enumeration.RoleEnum;
 import com.example.imageproject.repository.ImageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.stream.Stream;
 
 @Transactional
 public class ImageServiceTest extends BaseTest {
@@ -143,8 +147,9 @@ public class ImageServiceTest extends BaseTest {
         Assertions.assertTrue(result.isEmpty());
     }
 
-    @Test
-    public void downloadFile_HasAccess() {
+    @ParameterizedTest
+    @MethodSource("getArguments")
+    public void downloadFile_HasAccess(String extension, MediaType type) {
         var user = new User();
         user.setAuthorities(Collections.singletonList(
                 new SimpleGrantedAuthority(PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name())
@@ -153,14 +158,21 @@ public class ImageServiceTest extends BaseTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         var imageId = "imageId";
-        var image = new Image(null, "filename.jpeg", 1L, imageId, 1L);
+        var image = new Image(null, "filename" + extension, 1L, imageId, 1L);
         imageRepository.save(image);
 
         Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
 
         var response = imageService.download(imageId);
 
-        Assertions.assertEquals(MediaType.IMAGE_JPEG, response.getHeaders().getContentType());
+        Assertions.assertEquals(type, response.getHeaders().getContentType());
+    }
+
+    private static Stream<Arguments> getArguments() {
+        return Stream.of(
+                Arguments.of(".jpeg", MediaType.IMAGE_JPEG),
+                Arguments.of(".png", MediaType.IMAGE_PNG)
+        );
     }
 
     @Test
