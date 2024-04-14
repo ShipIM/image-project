@@ -11,4 +11,6 @@ public interface FilterRequestRepository extends CrudRepository<FilterRequest, L
 
     Optional<FilterRequest> findByRequestId(String requestId);
 
+    boolean existsByRequestId(String requestId);
+
 }

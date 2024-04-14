@@ -43,6 +43,10 @@ public class FilterRequestService {
 
     @Transactional
     public ApplyImageFiltersResponse createRequest(String imageId, List<FilterType> filters) {
+        if (!imageService.validateAccess(imageId)) {
+            throw new IllegalAccessException("You are not the owner of this image");
+        }
+
         var image = imageService.getImageByImageId(imageId);
         var requestId = UUID.randomUUID().toString();
 
