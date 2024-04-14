@@ -15,6 +15,7 @@ services:
     environment:
       - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/image-project'
       - 'MINIO_URL=http://image-minio:9000'
+      - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
   postgres:
     image: 'postgres:latest'
     container_name: 'image-postgres'
