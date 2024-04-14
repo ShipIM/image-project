@@ -22,10 +22,8 @@ spring:
     topic:
       outbound-topic: "images.wip"
       inbound-topic: "images.done"
-  cloud:
-    zookeeper:
-      config.enabled: false
-      connect-string: localhost:2181
+      partitions-number: 1
+      replication-factor: 3
 
 jwt:
   secret:

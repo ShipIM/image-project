@@ -35,6 +35,10 @@ public class KafkaConfiguration {
     private String outbound;
     @Value("${spring.kafka.topic.inbound-topic}")
     private String inbound;
+    @Value("${spring.kafka.topic.partitions-number}")
+    private Integer numPartitions;
+    @Value("${spring.kafka.topic.replication-factor}")
+    private Short replicationFactor;
     @Value("${spring.kafka.sasl.username}")
     private String username;
     @Value("${spring.kafka.sasl.password}")
@@ -42,12 +46,12 @@ public class KafkaConfiguration {
 
     @Bean
     public NewTopic topicWip() {
-        return new NewTopic(outbound, 1, (short) 3);
+        return new NewTopic(outbound, numPartitions, replicationFactor);
     }
 
     @Bean
     public NewTopic topicDone() {
-        return new NewTopic(inbound, 1, (short) 3);
+        return new NewTopic(inbound, numPartitions, replicationFactor);
     }
 
     @Bean

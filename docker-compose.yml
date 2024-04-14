@@ -54,7 +54,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 1
-      ZOOKEEPER_SASL_ENABLED: 'false'
+      ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/configs/kafka_server_jaas.conf"
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
@@ -74,7 +74,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 2
-      ZOOKEEPER_SASL_ENABLED: 'false'
+      ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf"
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
@@ -94,7 +94,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 3
-      ZOOKEEPER_SASL_ENABLED: 'false'
+      ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf"
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
