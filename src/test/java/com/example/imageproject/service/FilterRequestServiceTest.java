@@ -69,7 +69,6 @@ public class FilterRequestServiceTest extends BaseTest {
                 .getFilterRequestByRequestId("requestId"));
     }
 
-
     @Test
     public void getRequest_HasNoAccess() {
         var userId = 1L;
@@ -82,6 +81,29 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         Assertions.assertThrows(IllegalAccessException.class, () -> filterRequestService
+                .getRequest("requestId", imageId));
+    }
+
+    @Test
+    public void getRequest_EntitiesMismatch() {
+        var userId = 1L;
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        var imageId = "originalId";
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var another = "anotherId";
+        var anotherImage = new Image(null, "filename", 1L, another, userId);
+        imageRepository.save(anotherImage);
+
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, another, null,
+                "requestId", userId);
+        filterRequestRepository.save(filterRequest);
+
+        Assertions.assertThrows(EntityNotFoundException.class, () -> filterRequestService
                 .getRequest("requestId", imageId));
     }
 

@@ -87,6 +87,10 @@ public class FilterRequestService {
 
         var filterRequest = getFilterRequestByRequestId(requestId);
 
+        if (!filterRequest.getOriginalId().equals(imageId)) {
+            throw new EntityNotFoundException("There is no request for this image with such an id");
+        }
+
         return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.WIP ?
                 filterRequest.getOriginalId() : filterRequest.getModifiedId(), filterRequest.getStatus());
     }
