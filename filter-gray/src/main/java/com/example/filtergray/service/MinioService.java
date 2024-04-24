@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,11 +18,21 @@ public class MinioService {
     private final MinioClient client;
     private final MinioProperties properties;
 
-    public void upload(byte[] bytes, String reference) {
+    public void uploadFile(byte[] bytes, String reference) {
+        upload(bytes, reference, PutObjectArgs.builder());
+    }
+
+    public void uploadTmpFile(byte[] bytes, String reference) {
+        var tags = Map.of(properties.getTmpTag(), "");
+
+        upload(bytes, reference, PutObjectArgs.builder().tags(tags));
+    }
+
+    private void upload(byte[] bytes, String reference, PutObjectArgs.Builder builder) {
         try {
             var stream = new ByteArrayInputStream(bytes);
             client.putObject(
-                    PutObjectArgs.builder()
+                    builder
                             .bucket(properties.getBucket())
                             .object(reference)
                             .stream(stream, bytes.length, properties.getImageSize())

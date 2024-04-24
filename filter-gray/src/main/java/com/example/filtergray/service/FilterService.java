@@ -33,22 +33,6 @@ public class FilterService {
 
     private final ProcessedRepository processedRepository;
 
-    private String process(String imageId, String requestId) {
-        var processed = processedRepository.findByOriginalAndRequest(imageId, requestId);
-        if (processed.isPresent()) {
-            return processed.get().getModified();
-        }
-
-        var original = minioService.download(imageId);
-
-        var modifiedId = UUID.randomUUID().toString();
-
-        processedRepository.save(new Processed(null, imageId, requestId, modifiedId));
-        minioService.upload(original, modifiedId);
-
-        return modifiedId;
-    }
-
     @Transactional
     @KafkaListener(topics = "${spring.kafka.topic.processing-topic}",
             containerFactory = "processingFactory")
@@ -56,9 +40,9 @@ public class FilterService {
         if (imageFilter.getFilters().get(0) != TYPE) {
             return;
         }
-
         imageFilter.getFilters().remove(0);
-        var modifiedId = process(imageFilter.getImageId(), imageFilter.getRequestId());
+
+        var modifiedId = process(imageFilter);
 
         if (imageFilter.getFilters().isEmpty()) {
             var response = new ImageDone(modifiedId, imageFilter.getRequestId());
@@ -70,6 +54,28 @@ public class FilterService {
         }
 
         acknowledgment.acknowledge();
+    }
+
+    private String process(ImageFilter imageFilter) {
+        var processed = processedRepository
+                .findByOriginalAndRequest(imageFilter.getImageId(), imageFilter.getRequestId());
+        if (processed.isPresent()) {
+            return processed.get().getModified();
+        }
+
+        var original = minioService.download(imageFilter.getImageId());
+
+        var modifiedId = UUID.randomUUID().toString();
+
+        processedRepository.save(new Processed(null, imageFilter.getImageId(), imageFilter.getRequestId(),
+                modifiedId));
+        if (imageFilter.getFilters().isEmpty()) {
+            minioService.uploadFile(original, modifiedId);
+        } else {
+            minioService.uploadTmpFile(original, modifiedId);
+        }
+
+        return modifiedId;
     }
 
 }

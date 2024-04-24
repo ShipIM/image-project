@@ -19,6 +19,8 @@ public class MinioProperties {
 
     private Long imageSize;
 
+    private String tmpTag;
+
     private Integer ttl;
 
 }

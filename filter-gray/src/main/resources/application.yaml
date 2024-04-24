@@ -29,4 +29,5 @@ minio:
   secretKey: password
   bucket: image-storage
   image-size: 10485760
+  tmp-tag: tmp/
   ttl: 1
