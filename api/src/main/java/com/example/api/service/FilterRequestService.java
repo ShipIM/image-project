@@ -101,9 +101,12 @@ public class FilterRequestService {
     }
 
     @Transactional
-    @KafkaListener(topics = "${spring.kafka.topic.done-topic}",
+    @KafkaListener(
+            topics = "${spring.kafka.topic.done-topic}",
             groupId = "images.done-consumer-group-1",
-            containerFactory = "doneFactory")
+            containerFactory = "doneFactory",
+            concurrency = "${spring.kafka.topic.partitions-number}"
+    )
     public void consume(ImageDone imageDone, Acknowledgment acknowledgment) {
         var filterRequest = getFilterRequestByRequestId(imageDone.getRequestId());
         var modifiedImageId = imageDone.getImageId();

@@ -34,10 +34,14 @@ public class FilterService {
     private final ProcessedRepository processedRepository;
 
     @Transactional
-    @KafkaListener(topics = "${spring.kafka.topic.processing-topic}",
-            containerFactory = "processingFactory")
+    @KafkaListener(
+            topics = "${spring.kafka.topic.processing-topic}",
+            containerFactory = "processingFactory",
+            concurrency = "${spring.kafka.topic.partitions-number}"
+    )
     public void consume(ImageFilter imageFilter, Acknowledgment acknowledgment) {
-        if (imageFilter.getFilters().get(0) != TYPE) {
+        if (imageFilter.getFilters().get(0) != TYPE ||
+                processedRepository.existsByOriginalAndRequest(imageFilter.getImageId(), imageFilter.getRequestId())) {
             return;
         }
         imageFilter.getFilters().remove(0);
@@ -57,12 +61,6 @@ public class FilterService {
     }
 
     private String process(ImageFilter imageFilter) {
-        var processed = processedRepository
-                .findByOriginalAndRequest(imageFilter.getImageId(), imageFilter.getRequestId());
-        if (processed.isPresent()) {
-            return processed.get().getModified();
-        }
-
         var original = minioService.download(imageFilter.getImageId());
 
         var modifiedId = UUID.randomUUID().toString();

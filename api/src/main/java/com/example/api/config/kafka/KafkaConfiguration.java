@@ -96,6 +96,9 @@ public class KafkaConfiguration {
 
         props.put(ProducerConfig.RETRIES_CONFIG, 1);
 
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "api-prod");
+
         props.putAll(saslProps());
 
         return props;
