@@ -1,7 +1,7 @@
-package com.example.api.config.kafka;
+package com.example.filtergray.config.kafka;
 
-import com.example.api.dto.kafka.image.ImageDone;
-import com.example.api.dto.kafka.image.ImageFilter;
+import com.example.filtergray.dto.kafka.image.ImageDone;
+import com.example.filtergray.dto.kafka.image.ImageFilter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -33,6 +33,8 @@ public class KafkaConfiguration {
 
     @Value("${spring.kafka.topic.processing-topic}")
     private String processing;
+    @Value("${spring.kafka.topic.done-topic}")
+    private String done;
     @Value("${spring.kafka.topic.partitions-number}")
     private Integer numPartitions;
     @Value("${spring.kafka.topic.replication-factor}")
@@ -48,20 +50,30 @@ public class KafkaConfiguration {
     }
 
     @Bean
+    public NewTopic topicDone() {
+        return new NewTopic(done, numPartitions, replicationFactor);
+    }
+
+    @Bean
     public KafkaAdmin kafkaAdmin() {
         return new KafkaAdmin(adminProps());
     }
 
     @Bean
-    public KafkaTemplate<String, ImageFilter> kafkaTemplate() {
+    public KafkaTemplate<String, ImageFilter> imageFilterKafkaTemplate() {
         return new KafkaTemplate<>(imageFilterProducerFactory());
     }
 
-    @Bean("doneFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, ImageDone> doneFactory() {
+    @Bean
+    public KafkaTemplate<String, ImageDone> imageDoneKafkaTemplate() {
+        return new KafkaTemplate<>(imageDoneProducerFactory());
+    }
+
+    @Bean("processingFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, ImageDone> processingFactory() {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, ImageDone>();
 
-        factory.setConsumerFactory(imageDoneConsumerFactory());
+        factory.setConsumerFactory(imageFilterConsumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
@@ -71,9 +83,13 @@ public class KafkaConfiguration {
         return new DefaultKafkaProducerFactory<>(producerProps());
     }
 
-    private ConsumerFactory<String, ImageDone> imageDoneConsumerFactory() {
+    private ProducerFactory<String, ImageDone> imageDoneProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerProps());
+    }
+
+    private ConsumerFactory<String, ImageDone> imageFilterConsumerFactory() {
         var props = consumerProps();
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.api.dto.kafka.image.ImageDone");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.filtergray.dto.kafka.image.ImageFilter");
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
@@ -110,6 +126,8 @@ public class KafkaConfiguration {
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "images.wip-producer-group-1");
 
         props.putAll(saslProps());
 

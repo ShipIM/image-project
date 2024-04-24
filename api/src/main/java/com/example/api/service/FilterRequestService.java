@@ -30,8 +30,8 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class FilterRequestService {
 
-    @Value("${spring.kafka.topic.outbound-topic}")
-    private String out;
+    @Value("${spring.kafka.topic.processing-topic}")
+    private String processing;
 
     private static final Integer MAX_ATTEMPTS = 3;
     private static final Long BACKOFF_PERIOD = 500L;
@@ -64,7 +64,7 @@ public class FilterRequestService {
         while (attempts < MAX_ATTEMPTS) {
             try {
                 try {
-                    kafkaTemplate.send(out, request).get();
+                    kafkaTemplate.send(processing, request).get();
 
                     return;
                 } catch (ExecutionException e) {
@@ -101,9 +101,9 @@ public class FilterRequestService {
     }
 
     @Transactional
-    @KafkaListener(topics = "${spring.kafka.topic.inbound-topic}",
+    @KafkaListener(topics = "${spring.kafka.topic.done-topic}",
             groupId = "images.done-consumer-group-1",
-            containerFactory = "imageDoneKafkaListenerContainerFactory")
+            containerFactory = "doneFactory")
     public void consume(ImageDone imageDone, Acknowledgment acknowledgment) {
         var filterRequest = getFilterRequestByRequestId(imageDone.getRequestId());
         var modifiedImageId = imageDone.getImageId();
