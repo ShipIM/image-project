@@ -6,6 +6,7 @@ import com.example.filtergray.model.entity.Processed;
 import com.example.filtergray.model.enumeration.FilterType;
 import com.example.filtergray.repository.ProcessedRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,10 +14,12 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FilterService {
 
     private static final FilterType TYPE = FilterType.GRAY;
@@ -30,7 +33,6 @@ public class FilterService {
     private final KafkaTemplate<String, ImageFilter> filterTemplate;
 
     private final MinioService minioService;
-
     private final ProcessedRepository processedRepository;
 
     @Transactional
@@ -50,14 +52,22 @@ public class FilterService {
 
         if (imageFilter.getFilters().isEmpty()) {
             var response = new ImageDone(modifiedId, imageFilter.getRequestId());
-            doneTemplate.send(done, response);
+            doneTemplate.send(done, response)
+                    .whenComplete((result, exception) -> {
+                        if (Objects.isNull(exception)) {
+                            acknowledgment.acknowledge();
+                        }
+                    });
         } else {
             var response = new ImageFilter(modifiedId, imageFilter.getRequestId(),
                     imageFilter.getFilters());
-            filterTemplate.send(processing, response);
+            filterTemplate.send(processing, response)
+                    .whenComplete((result, exception) -> {
+                        if (Objects.isNull(exception)) {
+                            acknowledgment.acknowledge();
+                        }
+                    });
         }
-
-        acknowledgment.acknowledge();
     }
 
     private String process(ImageFilter imageFilter) {

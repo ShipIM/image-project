@@ -28,8 +28,7 @@ public class ImageFilterControllerTest extends BaseTest {
     @Test
     @WithMockUser(authorities = "FILTER_APPLY_PRIVILEGE")
     public void applyFilter_Success() throws Exception {
-        var filters = new String[]{FilterType.CROP.name(), FilterType.OTHER.name(), FilterType.REVERS_COLORS.name(),
-                FilterType.REMOVE_BACKGROUND.name()};
+        var filters = new String[]{FilterType.GRAY.name()};
         var response = new ApplyImageFiltersResponse("requestId");
 
         Mockito.when(filterRequestService.createRequest(Mockito.any(), Mockito.anyList())).thenReturn(response);
@@ -63,8 +62,7 @@ public class ImageFilterControllerTest extends BaseTest {
     @Test
     @WithMockUser(authorities = "FILTER_APPLY_PRIVILEGE")
     public void applyFilter_NotFound() throws Exception {
-        var filters = new String[]{FilterType.CROP.name(), FilterType.OTHER.name(), FilterType.REVERS_COLORS.name(),
-                FilterType.REMOVE_BACKGROUND.name()};
+        var filters = new String[]{FilterType.GRAY.name()};
 
         Mockito.when(filterRequestService.createRequest(Mockito.any(), Mockito.anyList()))
                 .thenThrow(EntityNotFoundException.class);

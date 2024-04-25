@@ -113,7 +113,6 @@ public class KafkaConfiguration {
         props.put(ProducerConfig.RETRIES_CONFIG, 1);
 
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "filter-gray-prod");
 
         props.putAll(saslProps());
 
@@ -131,8 +130,6 @@ public class KafkaConfiguration {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "images.wip-producer-group-1");
-
-        props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
 
         props.putAll(saslProps());
 
