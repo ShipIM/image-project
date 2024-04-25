@@ -179,10 +179,7 @@ paths:
               enum:
                 # Приведенные ниже фильтры представлены в ознакомительных целях,
                 # тут вы можете вставить все, что душе угодно
-                - REVERS_COLORS
-                - CROP
-                - REMOVE_BACKGROUND
-                - OTHER
+                - GRAY
       responses:
         '200':
           description: Успех выполнения операции
