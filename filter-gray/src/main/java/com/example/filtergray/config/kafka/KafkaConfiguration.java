@@ -1,7 +1,7 @@
 package com.example.filtergray.config.kafka;
 
 import com.example.filtergray.dto.kafka.image.ImageDone;
-import com.example.filtergray.dto.kafka.image.ImageFilter;
+import com.example.filtergray.dto.kafka.image.ImageFilterRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -60,7 +60,7 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public KafkaTemplate<String, ImageFilter> imageFilterKafkaTemplate() {
+    public KafkaTemplate<String, ImageFilterRequest> imageFilterKafkaTemplate() {
         return new KafkaTemplate<>(imageFilterProducerFactory());
     }
 
@@ -79,7 +79,7 @@ public class KafkaConfiguration {
         return factory;
     }
 
-    private ProducerFactory<String, ImageFilter> imageFilterProducerFactory() {
+    private ProducerFactory<String, ImageFilterRequest> imageFilterProducerFactory() {
         return new DefaultKafkaProducerFactory<>(producerProps());
     }
 
@@ -89,7 +89,7 @@ public class KafkaConfiguration {
 
     private ConsumerFactory<String, ImageDone> imageFilterConsumerFactory() {
         var props = consumerProps();
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.filtergray.dto.kafka.image.ImageFilter");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.filtergray.dto.kafka.image.ImageFilterRequest");
 
         return new DefaultKafkaConsumerFactory<>(props);
     }

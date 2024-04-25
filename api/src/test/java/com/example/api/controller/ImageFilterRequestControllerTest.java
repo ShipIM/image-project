@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-public class ImageFilterControllerTest extends BaseTest {
+public class ImageFilterRequestControllerTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -2,7 +2,7 @@ package com.example.api.service;
 
 import com.example.api.config.BaseTest;
 import com.example.api.dto.kafka.image.ImageDone;
-import com.example.api.dto.kafka.image.ImageFilter;
+import com.example.api.dto.kafka.image.ImageFilterRequest;
 import com.example.api.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.api.exception.EntityNotFoundException;
 import com.example.api.exception.IllegalAccessException;
@@ -45,7 +45,7 @@ public class FilterRequestServiceTest extends BaseTest {
     @Autowired
     private ImageRepository imageRepository;
     @MockBean
-    private KafkaTemplate<String, ImageFilter> kafkaTemplate;
+    private KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     @MockBean
     private MinioService minioService;
 

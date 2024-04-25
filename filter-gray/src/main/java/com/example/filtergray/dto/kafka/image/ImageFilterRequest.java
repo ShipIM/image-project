@@ -1,6 +1,6 @@
-package com.example.api.dto.kafka.image;
+package com.example.filtergray.dto.kafka.image;
 
-import com.example.api.model.enumeration.FilterType;
+import com.example.filtergray.model.enumeration.FilterType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ImageFilter implements Serializable {
+public class ImageFilterRequest implements Serializable {
 
     private String imageId;
 

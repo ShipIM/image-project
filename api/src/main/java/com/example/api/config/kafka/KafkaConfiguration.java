@@ -1,7 +1,7 @@
 package com.example.api.config.kafka;
 
 import com.example.api.dto.kafka.image.ImageDone;
-import com.example.api.dto.kafka.image.ImageFilter;
+import com.example.api.dto.kafka.image.ImageFilterRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -53,7 +53,7 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public KafkaTemplate<String, ImageFilter> kafkaTemplate() {
+    public KafkaTemplate<String, ImageFilterRequest> kafkaTemplate() {
         return new KafkaTemplate<>(imageFilterProducerFactory());
     }
 
@@ -67,7 +67,7 @@ public class KafkaConfiguration {
         return factory;
     }
 
-    private ProducerFactory<String, ImageFilter> imageFilterProducerFactory() {
+    private ProducerFactory<String, ImageFilterRequest> imageFilterProducerFactory() {
         return new DefaultKafkaProducerFactory<>(producerProps());
     }
 

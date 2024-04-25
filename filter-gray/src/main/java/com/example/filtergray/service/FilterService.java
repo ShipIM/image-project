@@ -1,10 +1,10 @@
 package com.example.filtergray.service;
 
+import com.example.filtergray.api.repository.ProcessedRepository;
 import com.example.filtergray.dto.kafka.image.ImageDone;
-import com.example.filtergray.dto.kafka.image.ImageFilter;
+import com.example.filtergray.dto.kafka.image.ImageFilterRequest;
+import com.example.filtergray.imagefilter.GrayFilter;
 import com.example.filtergray.model.entity.Processed;
-import com.example.filtergray.model.enumeration.FilterType;
-import com.example.filtergray.repository.ProcessedRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,6 +13,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -20,18 +21,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FilterService {
 
-    private static final FilterType TYPE = FilterType.GRAY;
-
     @Value("${spring.kafka.topic.processing-topic}")
     private String processing;
     @Value("${spring.kafka.topic.done-topic}")
     private String done;
 
     private final KafkaTemplate<String, ImageDone> doneTemplate;
-    private final KafkaTemplate<String, ImageFilter> filterTemplate;
+    private final KafkaTemplate<String, ImageFilterRequest> filterTemplate;
 
     private final MinioService minioService;
     private final ProcessedRepository processedRepository;
+
+    private final GrayFilter grayFilter;
 
     @Transactional
     @KafkaListener(
@@ -39,17 +40,18 @@ public class FilterService {
             containerFactory = "processingFactory",
             concurrency = "${spring.kafka.topic.partitions-number}"
     )
-    public void consume(ImageFilter imageFilter, Acknowledgment acknowledgment) {
-        if (imageFilter.getFilters().get(0) != TYPE ||
-                processedRepository.existsByOriginalAndRequest(imageFilter.getImageId(), imageFilter.getRequestId())) {
+    public void consume(ImageFilterRequest imageFilterRequest, Acknowledgment acknowledgment) throws IOException {
+        if (imageFilterRequest.getFilters().get(0) != grayFilter.getFilterType() ||
+                processedRepository.existsByOriginalAndRequest(imageFilterRequest.getImageId(),
+                        imageFilterRequest.getRequestId())) {
             return;
         }
-        imageFilter.getFilters().remove(0);
+        imageFilterRequest.getFilters().remove(0);
 
-        var modifiedId = process(imageFilter);
+        var modifiedId = process(imageFilterRequest);
 
-        if (imageFilter.getFilters().isEmpty()) {
-            var response = new ImageDone(modifiedId, imageFilter.getRequestId());
+        if (imageFilterRequest.getFilters().isEmpty()) {
+            var response = new ImageDone(modifiedId, imageFilterRequest.getRequestId());
             doneTemplate.send(done, response)
                     .whenComplete((result, exception) -> {
                         if (Objects.isNull(exception)) {
@@ -57,8 +59,8 @@ public class FilterService {
                         }
                     });
         } else {
-            var response = new ImageFilter(modifiedId, imageFilter.getRequestId(),
-                    imageFilter.getFilters());
+            var response = new ImageFilterRequest(modifiedId, imageFilterRequest.getRequestId(),
+                    imageFilterRequest.getFilters());
             filterTemplate.send(processing, response)
                     .whenComplete((result, exception) -> {
                         if (Objects.isNull(exception)) {
@@ -68,17 +70,19 @@ public class FilterService {
         }
     }
 
-    private String process(ImageFilter imageFilter) {
-        var original = minioService.download(imageFilter.getImageId());
+    private String process(ImageFilterRequest imageFilterRequest) throws IOException {
+        var original = minioService.download(imageFilterRequest.getImageId());
 
+        var modified = grayFilter.convert(original);
         var modifiedId = UUID.randomUUID().toString();
 
-        processedRepository.save(new Processed(null, imageFilter.getImageId(), imageFilter.getRequestId(),
+        processedRepository.save(new Processed(null, imageFilterRequest.getImageId(),
+                imageFilterRequest.getRequestId(),
                 modifiedId));
-        if (imageFilter.getFilters().isEmpty()) {
-            minioService.uploadFile(original, modifiedId);
+        if (imageFilterRequest.getFilters().isEmpty()) {
+            minioService.uploadFile(modified, modifiedId);
         } else {
-            minioService.uploadTmpFile(original, modifiedId);
+            minioService.uploadTmpFile(modified, modifiedId);
         }
 
         return modifiedId;

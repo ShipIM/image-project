@@ -1,4 +1,4 @@
-package com.example.filtergray.repository;
+package com.example.filtergray.api.repository;
 
 import com.example.filtergray.model.entity.Processed;
 import org.springframework.data.repository.CrudRepository;

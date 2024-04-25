@@ -1,7 +1,7 @@
 package com.example.api.service;
 
 import com.example.api.dto.kafka.image.ImageDone;
-import com.example.api.dto.kafka.image.ImageFilter;
+import com.example.api.dto.kafka.image.ImageFilterRequest;
 import com.example.api.dto.mapper.FilterMapper;
 import com.example.api.dto.rest.image.ApplyImageFiltersResponse;
 import com.example.api.dto.rest.image.GetModifiedImageByRequestIdResponse;
@@ -38,7 +38,7 @@ public class FilterRequestService {
 
     private final FilterRequestRepository filterRequestRepository;
     private final ImageService imageService;
-    private final KafkaTemplate<String, ImageFilter> kafkaTemplate;
+    private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     private final FilterMapper imageFilterMapper;
 
     @Transactional
@@ -59,7 +59,7 @@ public class FilterRequestService {
         return new ApplyImageFiltersResponse(requestId);
     }
 
-    private void sendRequest(ImageFilter request) {
+    private void sendRequest(ImageFilterRequest request) {
         int attempts = 0;
         while (attempts < MAX_ATTEMPTS) {
             try {
