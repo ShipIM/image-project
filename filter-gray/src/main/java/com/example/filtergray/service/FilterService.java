@@ -1,9 +1,9 @@
 package com.example.filtergray.service;
 
+import com.example.filtergray.api.imagefilter.ConcreteImageFilter;
 import com.example.filtergray.api.repository.ProcessedRepository;
 import com.example.filtergray.dto.kafka.image.ImageDone;
 import com.example.filtergray.dto.kafka.image.ImageFilterRequest;
-import com.example.filtergray.imagefilter.GrayFilter;
 import com.example.filtergray.model.entity.Processed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ public class FilterService {
     private final MinioService minioService;
     private final ProcessedRepository processedRepository;
 
-    private final GrayFilter grayFilter;
+    private final ConcreteImageFilter filter;
 
     @Transactional
     @KafkaListener(
@@ -41,7 +41,7 @@ public class FilterService {
             concurrency = "${spring.kafka.topic.partitions-number}"
     )
     public void consume(ImageFilterRequest imageFilterRequest, Acknowledgment acknowledgment) throws IOException {
-        if (imageFilterRequest.getFilters().get(0) != grayFilter.getFilterType() ||
+        if (imageFilterRequest.getFilters().get(0) != filter.getFilterType() ||
                 processedRepository.existsByOriginalAndRequest(imageFilterRequest.getImageId(),
                         imageFilterRequest.getRequestId())) {
             return;
@@ -73,12 +73,11 @@ public class FilterService {
     private String process(ImageFilterRequest imageFilterRequest) throws IOException {
         var original = minioService.download(imageFilterRequest.getImageId());
 
-        var modified = grayFilter.convert(original);
+        var modified = filter.convert(original);
         var modifiedId = UUID.randomUUID().toString();
 
         processedRepository.save(new Processed(null, imageFilterRequest.getImageId(),
-                imageFilterRequest.getRequestId(),
-                modifiedId));
+                imageFilterRequest.getRequestId()));
         if (imageFilterRequest.getFilters().isEmpty()) {
             minioService.uploadFile(modified, modifiedId);
         } else {

@@ -2,6 +2,7 @@ package com.example.filtergray.model.enumeration;
 
 public enum FilterType {
 
-    GRAY
+    GRAY,
+    SAMPLE
 
 }

@@ -17,10 +17,6 @@
                 <constraints
                         nullable="false"/>
             </column>
-            <column name="modified_image_id" type="VARCHAR">
-                <constraints
-                        nullable="false"/>
-            </column>
         </createTable>
         <addUniqueConstraint
                 columnNames="original_image_id, request_id"

@@ -1,6 +1,6 @@
 package com.example.filtergray.imagefilter;
 
-import com.example.filtergray.api.imagefilter.ImageFilter;
+import com.example.filtergray.api.imagefilter.ConcreteImageFilter;
 import com.example.filtergray.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,9 +14,11 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 @Component
-public class GrayFilter implements ImageFilter {
+public class GrayFilter extends ConcreteImageFilter {
 
-    private final FilterType TYPE = FilterType.GRAY;
+    public GrayFilter() {
+        super(FilterType.GRAY);
+    }
 
     @Override
     public byte[] convert(byte[] imageBytes) throws IOException {
@@ -42,11 +44,6 @@ public class GrayFilter implements ImageFilter {
         ImageIO.write(grayscaleImage, formatName, outputStream);
 
         return outputStream.toByteArray();
-    }
-
-    @Override
-    public FilterType getFilterType() {
-        return TYPE;
     }
 
     @RequiredArgsConstructor

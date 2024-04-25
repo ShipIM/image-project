@@ -24,7 +24,4 @@ public class Processed {
     @Column("request_id")
     private String request;
 
-    @Column("modified_image_id")
-    private String modified;
-
 }
