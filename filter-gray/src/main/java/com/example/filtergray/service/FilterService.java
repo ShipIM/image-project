@@ -6,7 +6,6 @@ import com.example.filtergray.model.entity.Processed;
 import com.example.filtergray.model.enumeration.FilterType;
 import com.example.filtergray.repository.ProcessedRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,7 +18,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class FilterService {
 
     private static final FilterType TYPE = FilterType.GRAY;
