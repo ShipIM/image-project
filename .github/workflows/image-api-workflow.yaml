@@ -1,19 +1,19 @@
-name: api-workflow
+name: image-api-workflow
 
 on:
   push:
     paths:
-      - 'api/**'
+      - 'image-api/**'
   pull_request:
     paths:
-      - 'api/**'
+      - 'image-api/**'
 
 jobs:
   complicated:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./api
+        working-directory: ./image-api
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: ${{ github.workspace }}/api/target/site/jacoco/jacoco.xml
+          paths: ${{ github.workspace }}/image-api/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 50
           min-coverage-changed-files: 50
@@ -56,14 +56,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3.1.0
         with:
-          images: shipim/image-project
+          images: shipim/image-project-image-api
 
       - name: build and push Docker image
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
         uses: docker/build-push-action@v3.1.0
         with:
           context: .
-          file: ./api/Dockerfile
+          file: ./image-api/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -26,7 +25,6 @@ import java.nio.file.Paths;
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
 @ContextConfiguration(initializers = BaseTest.Initializer.class)
-@TestPropertySource(properties = {"spring.config.location=classpath:application.yml"})
 public abstract class BaseTest {
 
     private static final String DATABASE_NAME = "image-project";

@@ -23,7 +23,7 @@ public class MinioServiceTest extends BaseTest {
     @Autowired
     private MinioProperties minioProperties;
 
-    private static MultipartFile file = new MockMultipartFile("file", "file.txt",
+    private static final MultipartFile file = new MockMultipartFile("file", "file.txt",
             "text/plain", "content".getBytes());
     private final String objectName = "object";
 
