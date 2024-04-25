@@ -10,7 +10,7 @@ import com.example.imageapi.exception.IllegalAccessException;
 import com.example.imageapi.model.entity.FilterRequest;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
-import com.example.imageapi.repository.FilterRequestRepository;
+import com.example.imageapi.api.repository.FilterRequestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;

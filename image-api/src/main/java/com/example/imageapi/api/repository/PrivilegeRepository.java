@@ -1,4 +1,4 @@
-package com.example.imageapi.repository;
+package com.example.imageapi.api.repository;
 
 import com.example.imageapi.model.entity.Privilege;
 import org.springframework.data.jdbc.repository.query.Query;

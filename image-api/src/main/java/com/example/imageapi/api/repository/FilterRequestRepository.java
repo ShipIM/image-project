@@ -1,4 +1,4 @@
-package com.example.imageapi.repository;
+package com.example.imageapi.api.repository;
 
 import com.example.imageapi.model.entity.FilterRequest;
 import org.springframework.data.repository.CrudRepository;

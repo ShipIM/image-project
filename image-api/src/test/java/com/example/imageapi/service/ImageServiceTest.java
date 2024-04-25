@@ -7,7 +7,7 @@ import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.PrivilegeEnum;
 import com.example.imageapi.model.enumeration.RoleEnum;
-import com.example.imageapi.repository.ImageRepository;
+import com.example.imageapi.api.repository.ImageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

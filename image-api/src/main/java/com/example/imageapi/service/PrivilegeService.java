@@ -1,7 +1,7 @@
 package com.example.imageapi.service;
 
 import com.example.imageapi.model.entity.Privilege;
-import com.example.imageapi.repository.PrivilegeRepository;
+import com.example.imageapi.api.repository.PrivilegeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

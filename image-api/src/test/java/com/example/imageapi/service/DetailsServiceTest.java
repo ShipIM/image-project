@@ -3,7 +3,7 @@ package com.example.imageapi.service;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.model.entity.User;
-import com.example.imageapi.repository.UserRepository;
+import com.example.imageapi.api.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

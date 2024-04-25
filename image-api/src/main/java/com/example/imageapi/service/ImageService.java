@@ -9,7 +9,7 @@ import com.example.imageapi.exception.IllegalAccessException;
 import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.PrivilegeEnum;
-import com.example.imageapi.repository.ImageRepository;
+import com.example.imageapi.api.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
