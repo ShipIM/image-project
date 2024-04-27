@@ -1,6 +1,6 @@
-package com.example.filtergray.api.repository;
+package com.example.filter.api.repository;
 
-import com.example.filtergray.model.entity.Processed;
+import com.example.filter.model.entity.Processed;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

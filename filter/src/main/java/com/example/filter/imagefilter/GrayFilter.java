@@ -1,8 +1,9 @@
-package com.example.filtergray.imagefilter;
+package com.example.filter.imagefilter;
 
-import com.example.filtergray.api.imagefilter.ConcreteImageFilter;
-import com.example.filtergray.model.enumeration.FilterType;
+import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.RecursiveAction;
 
 @Profile(value = "gray")
 @Component
+@Slf4j
 public class GrayFilter extends ConcreteImageFilter {
 
     public GrayFilter() {
@@ -23,29 +25,35 @@ public class GrayFilter extends ConcreteImageFilter {
     }
 
     @Override
-    public byte[] convert(byte[] imageBytes) throws IOException {
-        var inputStream = new ByteArrayInputStream(imageBytes);
-        var imageInputStream = ImageIO.createImageInputStream(inputStream);
+    public byte[] convert(byte[] imageBytes) {
+        try {
+            var inputStream = new ByteArrayInputStream(imageBytes);
+            var imageInputStream = ImageIO.createImageInputStream(inputStream);
 
-        var reader = ImageIO.getImageReaders(imageInputStream).next();
-        reader.setInput(imageInputStream, true);
-        var formatName = reader.getFormatName();
+            var reader = ImageIO.getImageReaders(imageInputStream).next();
+            reader.setInput(imageInputStream, true);
+            var formatName = reader.getFormatName();
 
-        var colorImage = ImageIO.read(imageInputStream);
+            var colorImage = ImageIO.read(imageInputStream);
 
-        var width = colorImage.getWidth();
-        var height = colorImage.getHeight();
+            var width = colorImage.getWidth();
+            var height = colorImage.getHeight();
 
-        var grayscaleImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+            var grayscaleImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
-        var forkJoinPool = new ForkJoinPool();
-        var convertTask = new ConvertToGrayscaleTask(colorImage, grayscaleImage, 0, 0, width, height);
-        forkJoinPool.invoke(convertTask);
+            var forkJoinPool = ForkJoinPool.commonPool();
+            var convertTask = new ConvertToGrayscaleTask(colorImage, grayscaleImage, 0, 0, width, height);
+            forkJoinPool.invoke(convertTask);
 
-        var outputStream = new ByteArrayOutputStream();
-        ImageIO.write(grayscaleImage, formatName, outputStream);
+            var outputStream = new ByteArrayOutputStream();
+            ImageIO.write(grayscaleImage, formatName, outputStream);
 
-        return outputStream.toByteArray();
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
+        }
+
+        return imageBytes;
     }
 
     @RequiredArgsConstructor

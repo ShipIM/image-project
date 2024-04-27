@@ -1,14 +1,6 @@
-server:
-  port: 8081
-
 spring:
   liquibase:
     change-log: classpath:/db/changelog/changelog-master.xml
-  datasource:
-    url: jdbc:postgresql://localhost:5432/filter-gray
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
   kafka:
     bootstrap-servers:
       - localhost:9092

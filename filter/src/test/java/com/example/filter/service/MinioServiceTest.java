@@ -1,12 +1,13 @@
-package com.example.filtergray.service;
+package com.example.filter.service;
 
-import com.example.filtergray.config.BaseTest;
-import com.example.filtergray.config.minio.MinioProperties;
-import com.example.filtergray.exception.UncheckedMinioException;
+import com.example.filter.config.BaseTest;
+import com.example.filter.config.minio.MinioProperties;
+import com.example.filter.exception.UncheckedMinioException;
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectTagsArgs;
 import io.minio.MinioClient;
 import io.minio.RemoveObjectArgs;
+import io.minio.errors.ErrorResponseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,19 @@ public class MinioServiceTest extends BaseTest {
     public void downloadFile_FileDoesNotExists() {
         Assertions.assertThrows(UncheckedMinioException.class,
                 () -> minioService.download("nonExistentObject"));
+    }
+
+    @Test
+    public void deleteFile() {
+        minioService.delete(objectName);
+
+        Assertions.assertThrows(ErrorResponseException.class,
+                () -> minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .object(objectName)
+                                .bucket(minioProperties.getBucket())
+                                .build()
+                ));
     }
 
 }

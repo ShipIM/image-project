@@ -1,12 +1,12 @@
-package com.example.filtergray.service;
+package com.example.filter.service;
 
-import com.example.filtergray.api.imagefilter.ConcreteImageFilter;
-import com.example.filtergray.api.repository.ProcessedRepository;
-import com.example.filtergray.config.BaseTest;
-import com.example.filtergray.dto.kafka.image.ImageDone;
-import com.example.filtergray.dto.kafka.image.ImageFilterRequest;
-import com.example.filtergray.model.entity.Processed;
-import com.example.filtergray.model.enumeration.FilterType;
+import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.api.repository.ProcessedRepository;
+import com.example.filter.config.BaseTest;
+import com.example.filter.dto.kafka.image.ImageDone;
+import com.example.filter.dto.kafka.image.ImageFilterRequest;
+import com.example.filter.model.entity.Processed;
+import com.example.filter.model.enumeration.FilterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

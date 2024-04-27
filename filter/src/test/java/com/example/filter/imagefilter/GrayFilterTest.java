@@ -1,7 +1,7 @@
-package com.example.filtergray.imagefilter;
+package com.example.filter.imagefilter;
 
-import com.example.filtergray.config.BaseTest;
-import com.example.filtergray.model.enumeration.FilterType;
+import com.example.filter.config.BaseTest;
+import com.example.filter.model.enumeration.FilterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

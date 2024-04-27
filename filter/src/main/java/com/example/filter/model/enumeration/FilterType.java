@@ -1,4 +1,4 @@
-package com.example.filtergray.model.enumeration;
+package com.example.filter.model.enumeration;
 
 public enum FilterType {
 

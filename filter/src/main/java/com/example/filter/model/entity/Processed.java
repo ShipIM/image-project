@@ -1,4 +1,4 @@
-package com.example.filtergray.model.entity;
+package com.example.filter.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

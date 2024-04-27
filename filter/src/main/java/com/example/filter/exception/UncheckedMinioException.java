@@ -1,4 +1,4 @@
-package com.example.filtergray.exception;
+package com.example.filter.exception;
 
 public class UncheckedMinioException extends RuntimeException {
 

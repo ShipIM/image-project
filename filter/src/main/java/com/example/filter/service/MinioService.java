@@ -1,10 +1,11 @@
-package com.example.filtergray.service;
+package com.example.filter.service;
 
-import com.example.filtergray.config.minio.MinioProperties;
-import com.example.filtergray.exception.UncheckedMinioException;
+import com.example.filter.config.minio.MinioProperties;
+import com.example.filter.exception.UncheckedMinioException;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,19 @@ public class MinioService {
                         .object(imageId)
                         .build())) {
             return stream.readAllBytes();
+        } catch (Exception e) {
+            throw new UncheckedMinioException(e.getMessage());
+        }
+    }
+
+    public void delete(String imageId) {
+        try {
+            client.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(imageId)
+                            .build()
+            );
         } catch (Exception e) {
             throw new UncheckedMinioException(e.getMessage());
         }

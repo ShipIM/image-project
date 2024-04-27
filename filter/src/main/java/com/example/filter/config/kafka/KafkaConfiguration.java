@@ -1,7 +1,6 @@
-package com.example.filtergray.config.kafka;
+package com.example.filter.config.kafka;
 
-import com.example.filtergray.dto.kafka.image.ImageDone;
-import com.example.filtergray.dto.kafka.image.ImageFilterRequest;
+import com.example.filter.dto.kafka.image.ImageDone;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -60,13 +59,8 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public KafkaTemplate<String, ImageFilterRequest> imageFilterKafkaTemplate() {
-        return new KafkaTemplate<>(imageFilterProducerFactory());
-    }
-
-    @Bean
-    public KafkaTemplate<String, ImageDone> imageDoneKafkaTemplate() {
-        return new KafkaTemplate<>(imageDoneProducerFactory());
+    public KafkaTemplate<String, Object> imageKafkaTemplate() {
+        return new KafkaTemplate<>(imageProducerFactory());
     }
 
     @Bean("processingFactory")
@@ -79,17 +73,13 @@ public class KafkaConfiguration {
         return factory;
     }
 
-    private ProducerFactory<String, ImageFilterRequest> imageFilterProducerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerProps());
-    }
-
-    private ProducerFactory<String, ImageDone> imageDoneProducerFactory() {
+    private ProducerFactory<String, Object> imageProducerFactory() {
         return new DefaultKafkaProducerFactory<>(producerProps());
     }
 
     private ConsumerFactory<String, ImageDone> imageFilterConsumerFactory() {
         var props = consumerProps();
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.filtergray.dto.kafka.image.ImageFilterRequest");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.example.filter.dto.kafka.image.ImageFilterRequest");
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
@@ -128,8 +118,6 @@ public class KafkaConfiguration {
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "images.wip-producer-group-1");
 
         props.putAll(saslProps());
 

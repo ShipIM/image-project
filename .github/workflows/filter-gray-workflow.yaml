@@ -1,19 +1,19 @@
-name: filter-gray-workflow
+name: filter-workflow
 
 on:
   push:
     paths:
-      - 'filter-gray/**'
+      - 'filter/**'
   pull_request:
     paths:
-      - 'filter-gray/**'
+      - 'filter/**'
 
 jobs:
   complicated:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./filter-gray
+        working-directory: ./filter
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: ${{ github.workspace }}/filter-gray/target/site/jacoco/jacoco.xml
+          paths: ${{ github.workspace }}/filter/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 50
           min-coverage-changed-files: 50
@@ -56,14 +56,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3.1.0
         with:
-          images: shipim/image-project-filter-gray
+          images: shipim/image-project-filter
 
       - name: build and push Docker image
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
         uses: docker/build-push-action@v3.1.0
         with:
           context: .
-          file: ./filter-gray/Dockerfile
+          file: ./filter/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

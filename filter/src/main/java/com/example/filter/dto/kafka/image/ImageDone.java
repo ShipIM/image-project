@@ -1,4 +1,4 @@
-package com.example.filtergray.dto.kafka.image;
+package com.example.filter.dto.kafka.image;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

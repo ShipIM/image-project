@@ -1,6 +1,6 @@
-package com.example.filtergray.api.imagefilter;
+package com.example.filter.api.imagefilter;
 
-import com.example.filtergray.model.enumeration.FilterType;
+import com.example.filter.model.enumeration.FilterType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

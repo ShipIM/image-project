@@ -1,4 +1,4 @@
-package com.example.filtergray.config.minio;
+package com.example.filter.config.minio;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;

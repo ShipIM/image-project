@@ -1,6 +1,6 @@
-package com.example.filtergray.dto.kafka.image;
+package com.example.filter.dto.kafka.image;
 
-import com.example.filtergray.model.enumeration.FilterType;
+import com.example.filter.model.enumeration.FilterType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
