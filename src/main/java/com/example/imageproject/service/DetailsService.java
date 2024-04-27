@@ -2,6 +2,7 @@ package com.example.imageproject.service;
 
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.model.entity.User;
+import com.example.imageproject.repository.PrivilegeRepository;
 import com.example.imageproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +14,12 @@ import org.springframework.stereotype.Service;
 public class DetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final PrivilegeService privilegeService;
+    private final PrivilegeRepository privilegeService;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         var user = getUserByUsername(username);
-        var role = roleService.getRoleByName(user.getRole().toString());
-        var privileges = privilegeService.findPrivilegesByRoleId(role.getId());
+        var privileges = privilegeService.findPrivilegesByRole(user.getRole());
 
         user.setAuthorities(privileges);
 
