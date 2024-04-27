@@ -1,9 +1,11 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.PrivilegeRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.api.repository.UserRepository;
+import com.example.imageapi.model.enumeration.RoleEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DetailsServiceTest extends BaseTest {
 
     @Autowired
-    private PrivilegeService privilegeService;
-    @Autowired
-    private RoleService roleService;
+    private PrivilegeRepository privilegeRepository;
     @Autowired
     private DetailsService detailsService;
     @Autowired
@@ -23,8 +23,7 @@ public class DetailsServiceTest extends BaseTest {
     @Test
     public void loadUserByUsername_UserExists() {
         var username = "admin";
-        var role = roleService.getRoleByName("ROLE_ADMIN");
-        var privileges = privilegeService.findPrivilegesByRoleId(role.getId());
+        var privileges = privilegeRepository.findPrivilegesByRole(RoleEnum.ROLE_ADMIN);
 
         var details = detailsService.loadUserByUsername(username);
 

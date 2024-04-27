@@ -3,6 +3,7 @@ package com.example.filtergray.imagefilter;
 import com.example.filtergray.api.imagefilter.ConcreteImageFilter;
 import com.example.filtergray.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+@Profile(value = "gray")
 @Component
 public class GrayFilter extends ConcreteImageFilter {
 
@@ -48,6 +50,7 @@ public class GrayFilter extends ConcreteImageFilter {
 
     @RequiredArgsConstructor
     private static class ConvertToGrayscaleTask extends RecursiveAction {
+
         private static final int THRESHOLD = 10000;
 
         private static final Double RED_WEIGHT = 0.299;
@@ -64,7 +67,7 @@ public class GrayFilter extends ConcreteImageFilter {
         private final int height;
 
         @Override
-        protected void compute() {
+        public void compute() {
             var totalPixels = width * height;
 
             if (totalPixels <= THRESHOLD) {

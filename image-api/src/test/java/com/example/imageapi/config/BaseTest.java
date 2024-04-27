@@ -27,13 +27,11 @@ import java.nio.file.Paths;
 @ContextConfiguration(initializers = BaseTest.Initializer.class)
 public abstract class BaseTest {
 
-    private static final String DATABASE_NAME = "image-project";
-
     @Container
     public static PostgreSQLContainer<?> postgreSQLContainer =
             new PostgreSQLContainer<>("postgres:latest")
                     .withReuse(true)
-                    .withDatabaseName(DATABASE_NAME);
+                    .withDatabaseName("image-api");
 
     @Container
     public static MinIOContainer minIOContainer = new MinIOContainer("minio/minio:latest")

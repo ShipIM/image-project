@@ -1,5 +1,6 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.PrivilegeRepository;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.api.repository.UserRepository;
@@ -13,14 +14,12 @@ import org.springframework.stereotype.Service;
 public class DetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final PrivilegeService privilegeService;
+    private final PrivilegeRepository privilegeService;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         var user = getUserByUsername(username);
-        var role = roleService.getRoleByName(user.getRole().toString());
-        var privileges = privilegeService.findPrivilegesByRoleId(role.getId());
+        var privileges = privilegeService.findPrivilegesByRole(user.getRole());
 
         user.setAuthorities(privileges);
 
