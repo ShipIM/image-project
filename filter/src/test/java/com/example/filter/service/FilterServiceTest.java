@@ -30,9 +30,7 @@ class FilterServiceTest extends BaseTest {
     @Autowired
     private FilterService filterService;
     @MockBean
-    private KafkaTemplate<String, ImageDone> doneTemplate;
-    @MockBean
-    private KafkaTemplate<String, ImageFilterRequest> filterTemplate;
+    private KafkaTemplate<String, Object> imageTemplate;
     @MockBean
     private MinioService minioService;
     @Autowired
@@ -41,7 +39,7 @@ class FilterServiceTest extends BaseTest {
     private ConcreteImageFilter filter;
 
     @Test
-    void consume_LastFilter() throws IOException {
+    void consume_LastFilter() {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.GRAY));
@@ -54,9 +52,9 @@ class FilterServiceTest extends BaseTest {
         Mockito.when(filter.convert(originalImage)).thenReturn(modifiedImage);
         Mockito.when(filter.getFilterType()).thenReturn(FilterType.GRAY);
 
-        var completeFuture = new CompletableFuture<SendResult<String, ImageDone>>();
+        var completeFuture = new CompletableFuture<SendResult<String, Object>>();
         completeFuture.complete(Mockito.mock(SendResult.class));
-        Mockito.when(doneTemplate.send(Mockito.any(), Mockito.any())).thenReturn(completeFuture);
+        Mockito.when(imageTemplate.send(Mockito.any(), Mockito.any())).thenReturn(completeFuture);
 
         var acknowledge = Mockito.mock(Acknowledgment.class);
         filterService.consume(imageFilterRequest, acknowledge);
@@ -67,12 +65,12 @@ class FilterServiceTest extends BaseTest {
 
         Assertions.assertTrue(processedRepository.existsByOriginalAndRequest(imageId, requestId));
 
-        Mockito.verify(doneTemplate, times(1)).send(Mockito.anyString(), Mockito.any());
+        Mockito.verify(imageTemplate, times(1)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(acknowledge, Mockito.times(1)).acknowledge();
     }
 
     @Test
-    void consume_NotLastFilter() throws IOException {
+    void consume_NotLastFilter() {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.GRAY, FilterType.SAMPLE));
@@ -85,9 +83,9 @@ class FilterServiceTest extends BaseTest {
         Mockito.when(filter.convert(originalImage)).thenReturn(modifiedImage);
         Mockito.when(filter.getFilterType()).thenReturn(FilterType.GRAY);
 
-        var completeFuture = new CompletableFuture<SendResult<String, ImageFilterRequest>>();
+        var completeFuture = new CompletableFuture<SendResult<String, Object>>();
         completeFuture.complete(Mockito.mock(SendResult.class));
-        Mockito.when(filterTemplate.send(Mockito.any(), Mockito.any())).thenReturn(completeFuture);
+        Mockito.when(imageTemplate.send(Mockito.any(), Mockito.any())).thenReturn(completeFuture);
 
         var acknowledge = Mockito.mock(Acknowledgment.class);
         filterService.consume(imageFilterRequest, acknowledge);
@@ -98,12 +96,12 @@ class FilterServiceTest extends BaseTest {
 
         Assertions.assertTrue(processedRepository.existsByOriginalAndRequest(imageId, requestId));
 
-        Mockito.verify(filterTemplate, times(1)).send(Mockito.anyString(), Mockito.any());
+        Mockito.verify(imageTemplate, times(1)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(acknowledge, Mockito.times(1)).acknowledge();
     }
 
     @Test
-    void consume_CanNotProcess() throws IOException {
+    void consume_CanNotProcess() {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.SAMPLE));
@@ -118,7 +116,7 @@ class FilterServiceTest extends BaseTest {
     }
 
     @Test
-    void consume_AlreadyProcessed() throws IOException {
+    void consume_AlreadyProcessed() {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.GRAY));

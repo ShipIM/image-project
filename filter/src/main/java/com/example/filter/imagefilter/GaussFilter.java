@@ -94,16 +94,16 @@ public class GaussFilter extends ConcreteImageFilter {
     @RequiredArgsConstructor
     private static class BlurringTask extends RecursiveAction {
 
-        private static final int THRESHOLD = 10000;
+        private static final Integer THRESHOLD = 10000;
 
-        private final BufferedImage originalImage;
-        private final BufferedImage blurredImage;
+        private final BufferedImage inputImage;
+        private final BufferedImage outputImage;
 
-        private final int startX;
-        private final int startY;
+        private final Integer startX;
+        private final Integer startY;
 
-        private final int width;
-        private final int height;
+        private final Integer width;
+        private final Integer height;
 
         private final double[][] kernel;
 
@@ -116,9 +116,9 @@ public class GaussFilter extends ConcreteImageFilter {
             } else {
                 var midHeight = height / 2;
 
-                var upperHalfTask = new BlurringTask(originalImage, blurredImage, startX, startY, width,
+                var upperHalfTask = new BlurringTask(inputImage, outputImage, startX, startY, width,
                         midHeight, kernel);
-                var lowerHalfTask = new BlurringTask(originalImage, blurredImage, startX,
+                var lowerHalfTask = new BlurringTask(inputImage, outputImage, startX,
                         startY + midHeight, width, height - midHeight, kernel);
 
                 invokeAll(upperHalfTask, lowerHalfTask);
@@ -137,10 +137,10 @@ public class GaussFilter extends ConcreteImageFilter {
 
                     for (var ky = -kernelRadius; ky <= kernelRadius; ky++) {
                         for (var kx = -kernelRadius; kx <= kernelRadius; kx++) {
-                            var pixelX = Math.min(Math.max(x + kx, 0), originalImage.getWidth() - 1);
-                            var pixelY = Math.min(Math.max(y + ky, 0), originalImage.getHeight() - 1);
+                            var px = Math.min(Math.max(x + kx, 0), inputImage.getWidth() - 1);
+                            var py = Math.min(Math.max(y + ky, 0), inputImage.getHeight() - 1);
 
-                            var rgb = originalImage.getRGB(pixelX, pixelY);
+                            var rgb = inputImage.getRGB(px, py);
                             var red = (rgb >> 16) & 0xFF;
                             var green = (rgb >> 8) & 0xFF;
                             var blue = rgb & 0xFF;
@@ -160,7 +160,7 @@ public class GaussFilter extends ConcreteImageFilter {
                     var newBlue = (int) Math.round((blueSum / weightSum));
 
                     var newRgb = (newRed << 16) | (newGreen << 8) | newBlue;
-                    blurredImage.setRGB(x, y, newRgb);
+                    outputImage.setRGB(x, y, newRgb);
                 }
             }
         }
