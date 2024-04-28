@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/filter-threshold
+    url: jdbc:postgresql://localhost:5432/threshold
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
