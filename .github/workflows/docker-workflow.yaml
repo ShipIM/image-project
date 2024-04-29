@@ -1,0 +1,94 @@
+name: docker-workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup java
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: 17
+          distribution: oracle
+          cache: maven
+
+      - name: make image-api package
+        run: mvn clean install
+        working-directory: ./image-api
+
+      - name: make filter package
+        run: mvn clean install
+        working-directory: ./filter
+
+      - name: log in to Docker Hub
+        uses: docker/login-action@v3.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: extract metadata for image-api
+        id: image-api-meta
+        uses: docker/metadata-action@v3.1.0
+        with:
+          images: shipim/image-api:1.0.0
+
+      - name: build and push image-api
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          file: ./image-api/Dockerfile
+          push: true
+          tags: ${{ steps.image-api-meta.outputs.tags }}
+          labels: ${{ steps.image-api-meta.outputs.labels }}
+
+      - name: extract metadata for filter-gray
+        id: filter-gray-meta
+        uses: docker/metadata-action@v3.1.0
+        with:
+          images: shipim/filter-gray:1.0.0
+
+      - name: build and push filter-gray
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          file: ./filter/Dockerfile-gray
+          push: true
+          tags: ${{ steps.filter-gray-meta.outputs.tags }}
+          labels: ${{ steps.filter-gray-meta.outputs.labels }}
+
+      - name: extract metadata for filter-gauss
+          id: filter-gauss-meta
+          uses: docker/metadata-action@v3.1.0
+          with:
+            images: shipim/filter-gauss:1.0.0
+
+      - name: build and push filter-gauss
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          file: ./filter/Dockerfile-gauss
+          push: true
+          tags: ${{ steps.filter-gauss-meta.outputs.tags }}
+          labels: ${{ steps.filter-gauss-meta.outputs.labels }}
+
+      - name: extract metadata for filter-threshold
+        id: filter-threshold-meta
+        uses: docker/metadata-action@v3.1.0
+        with:
+          images: shipim/filter-threshold:1.0.0
+
+      - name: build and push filter-threshold
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          file: ./filter/Dockerfile-threshold
+          push: true
+          tags: ${{ steps.filter-threshold-meta.outputs.tags }}
+          labels: ${{ steps.filter-threshold-meta.outputs.labels }}
