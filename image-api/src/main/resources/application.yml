@@ -7,7 +7,7 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/changelog-master.xml
   datasource:
-    url: jdbc:postgresql://localhost:5432/image-api
+    url: jdbc:postgresql://localhost:5432/api
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
