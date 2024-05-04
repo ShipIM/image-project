@@ -2,10 +2,9 @@ package com.example.filter.service;
 
 import com.example.filter.config.minio.MinioProperties;
 import com.example.filter.exception.UncheckedMinioException;
-import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import io.minio.*;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.MinioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +66,26 @@ public class MinioService {
         } catch (Exception e) {
             throw new UncheckedMinioException(e.getMessage());
         }
+    }
+
+    public Boolean objectExists(String id) {
+        try {
+            client.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(id)
+                            .build()
+            );
+        } catch (Exception e) {
+            if (e instanceof ErrorResponseException && ((ErrorResponseException) e)
+                    .errorResponse().code().equals("NoSuchKey")) {
+                return false;
+            }
+
+            throw new UncheckedMinioException(e.getMessage());
+        }
+
+        return true;
     }
 
 }

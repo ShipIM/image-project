@@ -102,4 +102,18 @@ public class MinioServiceTest extends BaseTest {
                 ));
     }
 
+    @Test
+    public void objectExists_ObjectExists() {
+        minioService.uploadFile(file, objectName);
+
+        Assertions.assertTrue(minioService.objectExists(objectName));
+    }
+
+    @Test
+    public void objectExists_ObjectNotExists() {
+        minioService.delete(objectName);
+
+        Assertions.assertFalse(minioService.objectExists(objectName));
+    }
+
 }

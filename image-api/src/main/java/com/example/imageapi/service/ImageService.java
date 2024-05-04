@@ -34,13 +34,23 @@ public class ImageService {
 
     @Transactional
     public UploadImageResponse saveImage(MultipartFile multipartFile) {
-        var imageId = UUID.randomUUID().toString();
+        var imageId = generateUUID();
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         imageRepository.save(imageMapper.toImage(multipartFile, imageId, user.getId()));
         minioService.upload(multipartFile, imageId);
 
         return imageMapper.toUploadResponse(imageId);
+    }
+
+    private String generateUUID() {
+        String newUUID;
+
+        do {
+            newUUID = UUID.randomUUID().toString();
+        } while (minioService.objectExists(newUUID));
+
+        return newUUID;
     }
 
     public Image saveImage(String originalImageId, String modifiedImageId) {

@@ -53,7 +53,7 @@ public class FilterService {
         var original = minioService.download(imageFilterRequest.getImageId());
 
         var modified = filter.convert(original);
-        var modifiedId = UUID.randomUUID().toString();
+        var modifiedId = generateUUID();
 
         processedRepository.save(new Processed(null, imageFilterRequest.getImageId(),
                 imageFilterRequest.getRequestId()));
@@ -78,6 +78,16 @@ public class FilterService {
 
             minioService.delete(modifiedId);
         }
+    }
+
+    private String generateUUID() {
+        String newUUID;
+
+        do {
+            newUUID = UUID.randomUUID().toString();
+        } while (minioService.objectExists(newUUID));
+
+        return newUUID;
     }
 
 }
