@@ -10,3 +10,5 @@ spring:
   kafka:
     consumer:
       group-id: images.wip-consumer-group-2
+    producer:
+      transaction-id-prefix: images.done-producer-2

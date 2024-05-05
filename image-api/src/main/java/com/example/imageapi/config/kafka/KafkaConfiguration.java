@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.security.plain.PlainLoginModule;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -22,6 +23,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
@@ -37,6 +39,8 @@ public class KafkaConfiguration {
     private Integer numPartitions;
     @Value("${spring.kafka.topic.replication-factor}")
     private Short replicationFactor;
+    @Value("${spring.kafka.topic.isr}")
+    private Short isr;
     @Value("${spring.kafka.sasl.username}")
     private String username;
     @Value("${spring.kafka.sasl.password}")
@@ -44,7 +48,13 @@ public class KafkaConfiguration {
 
     @Bean
     public NewTopic topicWip() {
-        return new NewTopic(processing, numPartitions, replicationFactor);
+        var topic = new NewTopic(processing, numPartitions, replicationFactor);
+
+        var config = new HashMap<String, String>();
+        config.put(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, isr.toString());
+        topic.configs(config);
+
+        return topic;
     }
 
     @Bean

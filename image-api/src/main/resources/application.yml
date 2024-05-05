@@ -24,6 +24,7 @@ spring:
       done-topic: "images.done"
       partitions-number: 1
       replication-factor: 3
+      isr: 2
 
 jwt:
   secret:
