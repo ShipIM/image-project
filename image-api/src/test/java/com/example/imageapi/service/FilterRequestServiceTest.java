@@ -252,4 +252,28 @@ public class FilterRequestServiceTest extends BaseTest {
         );
     }
 
+    @Test
+    public void consume_AlreadyProcessed() {
+        var userId = 1L;
+        var imageId = "originalId";
+        var modifiedImageId = "modifiedId";
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var requestId = "requestId";
+        var filterRequest = new FilterRequest(null, ImageStatus.DONE, imageId, modifiedImageId,
+                requestId, 1L);
+        filterRequestRepository.save(filterRequest);
+
+        var acknowledgment = Mockito.mock(Acknowledgment.class);
+
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId), acknowledgment);
+
+        Mockito.verify(acknowledgment, Mockito.never()).acknowledge();
+        Mockito.verify(minioService, Mockito.never()).download(Mockito.any());
+
+        var request = filterRequestService.getFilterRequestByRequestId(requestId);
+        Assertions.assertEquals(modifiedImageId, request.getModifiedId());
+    }
+
 }

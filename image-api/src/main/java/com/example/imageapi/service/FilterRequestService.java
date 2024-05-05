@@ -109,6 +109,10 @@ public class FilterRequestService {
     )
     public void consume(ImageDone imageDone, Acknowledgment acknowledgment) {
         var filterRequest = getFilterRequestByRequestId(imageDone.getRequestId());
+        if (filterRequest.getStatus().equals(ImageStatus.DONE)) {
+            return;
+        }
+        
         var modifiedImageId = imageDone.getImageId();
 
         filterRequest.setModifiedId(modifiedImageId);
