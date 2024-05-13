@@ -1,6 +1,6 @@
 package com.example.imageproject.exception.handler;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;

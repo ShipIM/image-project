@@ -1,7 +1,7 @@
 package com.example.imageproject.service;
 
 import com.example.imageproject.config.BaseTest;
-import com.example.imageproject.dto.user.AuthenticateUserRequest;
+import com.example.imageproject.dto.rest.user.AuthenticateUserRequest;
 import com.example.imageproject.model.entity.User;
 import com.example.imageproject.util.JwtUtils;
 import org.junit.jupiter.api.Assertions;

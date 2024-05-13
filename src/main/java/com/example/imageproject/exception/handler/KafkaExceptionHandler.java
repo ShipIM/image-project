@@ -1,7 +1,8 @@
 package com.example.imageproject.exception.handler;
 
 import com.example.imageproject.dto.rest.error.UiSuccessContainer;
-import com.example.imageproject.exception.UncheckedMinioException;
+import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.KafkaException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -11,11 +12,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
-public class MinioExceptionHandler {
+@RequiredArgsConstructor
+public class KafkaExceptionHandler {
 
-    @ExceptionHandler(value = UncheckedMinioException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public UiSuccessContainer handleErrorResponseException(UncheckedMinioException exception) {
+    @ExceptionHandler(value = KafkaException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public UiSuccessContainer handleErrorResponseException(KafkaException exception) {
         return new UiSuccessContainer(false, exception.getMessage());
     }
 

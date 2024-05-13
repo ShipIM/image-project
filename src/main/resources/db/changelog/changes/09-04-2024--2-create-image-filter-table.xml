@@ -3,21 +3,22 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-    <changeSet author="ShipIM" id="23-03-2024--11-create-image-table">
-        <createTable tableName="image">
+    <changeSet author="ShipIM" id="09-04-2024--2-create-image-filter-table">
+        <createTable tableName="image_filter">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints
                         primaryKey="true"/>
             </column>
-            <column name="filename" type="VARCHAR">
+            <column name="status" type="VARCHAR">
                 <constraints
                         nullable="false"/>
             </column>
-            <column name="size" type="BIGINT">
+            <column name="original_image_id" type="VARCHAR">
                 <constraints
                         nullable="false"/>
             </column>
-            <column name="image_id" type="VARCHAR">
+            <column name="modified_image_id" type="VARCHAR"/>
+            <column name="request_id" type="VARCHAR">
                 <constraints
                         unique="true"
                         nullable="false"/>
@@ -27,8 +28,12 @@
                         nullable="false"/>
             </column>
         </createTable>
-        <addForeignKeyConstraint baseTableName="image" baseColumnNames="user_id"
-                                 constraintName="fk_image_user"
+        <addForeignKeyConstraint baseTableName="image_filter" baseColumnNames="original_image_id"
+                                 constraintName="fk_image_filter_original_image"
+                                 referencedTableName="image" referencedColumnNames="image_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="image_filter" baseColumnNames="user_id"
+                                 constraintName="fk_image_filter_user"
                                  referencedTableName="_user" referencedColumnNames="id"
                                  onDelete="CASCADE" onUpdate="CASCADE"/>
     </changeSet>

@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.user;
+package com.example.imageproject.dto.rest.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

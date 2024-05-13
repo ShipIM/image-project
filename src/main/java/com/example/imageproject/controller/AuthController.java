@@ -1,8 +1,8 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.user.AuthenticateUserRequest;
-import com.example.imageproject.dto.user.AuthenticateUserResponse;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.user.AuthenticateUserRequest;
+import com.example.imageproject.dto.rest.user.AuthenticateUserResponse;
 import com.example.imageproject.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,11 +13,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Auth controller", description = "Basic API for working registration and authentication")
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Auth controller", description = "Basic API for working registration and authentication")
 public class AuthController {
 
     private final AuthService authService;

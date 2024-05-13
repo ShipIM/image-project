@@ -1,9 +1,9 @@
 package com.example.imageproject.controller;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.GetImagesResponse;
-import com.example.imageproject.dto.image.ImageResponse;
-import com.example.imageproject.dto.image.UploadImageResponse;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.GetImagesResponse;
+import com.example.imageproject.dto.rest.image.ImageResponse;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
 import com.example.imageproject.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +26,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@Tag(name = "Image Controller", description = "Basic CRUD API for working with images")
+@Tag(name = "Image Controller", description = "Базовый CRUD API для работы с картинками")
 @RestController
-@RequiredArgsConstructor
 @Validated
+@RequiredArgsConstructor
 public class ImageController {
 
     private final ImageService imageService;

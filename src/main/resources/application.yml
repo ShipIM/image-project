@@ -11,6 +11,22 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  kafka:
+    bootstrap-servers:
+      - localhost:9092
+      - localhost:9093
+      - localhost:9094
+    sasl:
+      username: admin
+      password: password
+    topic:
+      outbound-topic: "images.wip"
+      inbound-topic: "images.done"
+      partitions-number: 2
+      replication-factor: 3
+    backoff:
+      interval: 500
+      max-failure: 3
 
 jwt:
   secret:

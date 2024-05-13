@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.user;
+package com.example.imageproject.dto.rest.user;
 
 import com.example.imageproject.model.enumeration.RoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,27 +1,32 @@
 package com.example.imageproject.model.entity;
 
+import com.example.imageproject.model.enumeration.ImageStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "image")
+@Table(name = "image_filter")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode
-public class Image {
+public class FilterRequest {
 
     @Id
     private Long id;
 
-    private String filename;
+    private ImageStatus status = ImageStatus.WIP;
 
-    private Long size;
+    @Column("original_image_id")
+    private String originalId;
 
-    @Column("image_id")
-    private String imageId;
+    @Column("modified_image_id")
+    private String modifiedId;
+
+    @Column("request_id")
+    private String requestId;
 
     @Column("user_id")
     private Long userId;

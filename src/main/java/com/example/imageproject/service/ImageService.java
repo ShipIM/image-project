@@ -1,11 +1,12 @@
 package com.example.imageproject.service;
 
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.ImageResponse;
-import com.example.imageproject.dto.image.UploadImageResponse;
 import com.example.imageproject.dto.mapper.ImageMapper;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.ImageResponse;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.exception.IllegalAccessException;
+import com.example.imageproject.model.entity.Image;
 import com.example.imageproject.model.entity.User;
 import com.example.imageproject.model.enumeration.PrivilegeEnum;
 import com.example.imageproject.repository.ImageRepository;
@@ -42,6 +43,18 @@ public class ImageService {
         return imageMapper.toUploadResponse(imageId);
     }
 
+    public Image saveImage(String originalImageId, String modifiedImageId) {
+        if (imageRepository.existsByImageId(modifiedImageId)) {
+            return getImageByImageId(modifiedImageId);
+        }
+
+        var originalImage = getImageByImageId(originalImageId);
+        var bytes = minioService.download(modifiedImageId);
+
+        return imageRepository.save(imageMapper.toImage(originalImage.getFilename(), (long) bytes.length,
+                modifiedImageId, originalImage.getUserId()));
+    }
+
     public List<ImageResponse> getAllMeta() {
         var user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -54,15 +67,11 @@ public class ImageService {
     }
 
     public ResponseEntity<Resource> download(String imageId) {
-        var image = imageRepository.findByImageId(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no image with such an id"));
-        var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!Objects.equals(image.getUserId(), auth.getId()) && auth.getAuthorities().stream()
-                .noneMatch(authority -> Objects.equals(authority.getAuthority(),
-                        PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name()))) {
+        if (!validateAccess(imageId)) {
             throw new IllegalAccessException("You are not the owner of this image");
         }
+
+        var image = getImageByImageId(imageId);
 
         var resource = new ByteArrayResource(minioService.download(imageId));
         var extension = image.getFilename().substring(image.getFilename().indexOf(".") + 1);
@@ -74,13 +83,7 @@ public class ImageService {
 
     @Transactional
     public UiSuccessContainer delete(String imageId) {
-        var user = imageRepository.findUserByImageId(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no image with such an id"));
-        var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!Objects.equals(user, auth.getId()) && auth.getAuthorities().stream()
-                .noneMatch(authority -> Objects.equals(authority.getAuthority(),
-                        PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name()))) {
+        if (!validateAccess(imageId)) {
             throw new IllegalAccessException("You are not the owner of this image");
         }
 
@@ -88,6 +91,21 @@ public class ImageService {
         minioService.delete(imageId);
 
         return new UiSuccessContainer(true, "The image was successfully deleted");
+    }
+
+    public Image getImageByImageId(String imageId) {
+        return imageRepository.findByImageId(imageId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no image with such an id"));
+    }
+
+    public boolean validateAccess(String imageId) {
+        var user = imageRepository.findUserByImageId(imageId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no image with such an id"));
+        var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return Objects.equals(user, auth.getId()) || auth.getAuthorities().stream()
+                .anyMatch(authority -> Objects.equals(authority.getAuthority(),
+                        PrivilegeEnum.IMAGE_FULL_ACCESS_PRIVILEGE.name()));
     }
 
 }

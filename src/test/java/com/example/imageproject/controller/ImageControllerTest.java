@@ -1,8 +1,8 @@
 package com.example.imageproject.controller;
 
 import com.example.imageproject.config.BaseTest;
-import com.example.imageproject.dto.error.UiSuccessContainer;
-import com.example.imageproject.dto.image.UploadImageResponse;
+import com.example.imageproject.dto.rest.error.UiSuccessContainer;
+import com.example.imageproject.dto.rest.image.UploadImageResponse;
 import com.example.imageproject.exception.EntityNotFoundException;
 import com.example.imageproject.service.ImageService;
 import org.junit.jupiter.api.Test;

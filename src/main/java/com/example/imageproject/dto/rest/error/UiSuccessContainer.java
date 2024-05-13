@@ -1,4 +1,4 @@
-package com.example.imageproject.dto.error;
+package com.example.imageproject.dto.rest.error;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
