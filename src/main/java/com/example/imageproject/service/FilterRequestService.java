@@ -32,9 +32,10 @@ public class FilterRequestService {
 
     @Value("${spring.kafka.topic.outbound-topic}")
     private String out;
-
-    private static final Integer MAX_ATTEMPTS = 3;
-    private static final Long BACKOFF_PERIOD = 500L;
+    @Value("${spring.kafka.backoff.interval}")
+    private Long interval;
+    @Value("${spring.kafka.backoff.max-failure}")
+    private Long failures;
 
     private final FilterRequestRepository filterRequestRepository;
     private final ImageService imageService;
@@ -61,7 +62,7 @@ public class FilterRequestService {
 
     private void sendRequest(ImageFilter request) {
         int attempts = 0;
-        while (attempts < MAX_ATTEMPTS) {
+        while (attempts < failures) {
             try {
                 try {
                     kafkaTemplate.send(out, request).get();
@@ -70,7 +71,7 @@ public class FilterRequestService {
                 } catch (ExecutionException e) {
                     attempts++;
 
-                    Thread.sleep(BACKOFF_PERIOD);
+                    Thread.sleep(interval);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

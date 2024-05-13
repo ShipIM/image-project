@@ -22,8 +22,11 @@ spring:
     topic:
       outbound-topic: "images.wip"
       inbound-topic: "images.done"
-      partitions-number: 1
+      partitions-number: 2
       replication-factor: 3
+    backoff:
+      interval: 500
+      max-failure: 3
 
 jwt:
   secret:
