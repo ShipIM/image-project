@@ -152,6 +152,17 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/config/**/*</exclude>
+                        <exclude>**/dto/**/*</exclude>
+                        <exclude>**/exception/**/*</exclude>
+                        <exclude>**/filter/**/*</exclude>
+                        <exclude>**/model/**/*</exclude>
+                        <exclude>**/repository/**/*</exclude>
+                        <exclude>**/*Application*</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>
@@ -171,11 +182,6 @@
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/jacoco.exec</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
-                            <includes>
-                                <include>com/example/imageproject/service/*</include>
-                                <include>com/example/imageproject/util/*</include>
-                                <include>com/example/imageproject/controller/*</include>
-                            </includes>
                         </configuration>
                     </execution>
                 </executions>
@@ -198,7 +204,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <configLocation>google_checks.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
 </project>
