@@ -1,5 +1,7 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.FilterRequestRepository;
+import com.example.imageapi.api.repository.ImageRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.dto.kafka.image.ImageDone;
 import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
@@ -12,8 +14,6 @@ import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
 import com.example.imageapi.model.enumeration.RoleEnum;
-import com.example.imageapi.api.repository.FilterRequestRepository;
-import com.example.imageapi.api.repository.ImageRepository;
 import org.apache.kafka.common.KafkaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

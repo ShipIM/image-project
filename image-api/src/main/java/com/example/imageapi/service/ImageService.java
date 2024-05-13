@@ -1,5 +1,6 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.ImageRepository;
 import com.example.imageapi.dto.mapper.ImageMapper;
 import com.example.imageapi.dto.rest.error.UiSuccessContainer;
 import com.example.imageapi.dto.rest.image.ImageResponse;
@@ -9,7 +10,6 @@ import com.example.imageapi.exception.IllegalAccessException;
 import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.PrivilegeEnum;
-import com.example.imageapi.api.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;

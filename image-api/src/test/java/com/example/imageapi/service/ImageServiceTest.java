@@ -1,5 +1,6 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.ImageRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
@@ -7,7 +8,6 @@ import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.PrivilegeEnum;
 import com.example.imageapi.model.enumeration.RoleEnum;
-import com.example.imageapi.api.repository.ImageRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

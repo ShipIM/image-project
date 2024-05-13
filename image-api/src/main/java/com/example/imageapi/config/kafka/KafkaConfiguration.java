@@ -3,6 +3,7 @@ package com.example.imageapi.config.kafka;
 import com.example.imageapi.dto.kafka.image.ImageDone;
 import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -20,8 +21,10 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +32,7 @@ import java.util.Map;
 @Configuration
 @EnableKafka
 @RequiredArgsConstructor
+@Slf4j
 public class KafkaConfiguration {
 
     private final KafkaProperties properties;
@@ -45,6 +49,10 @@ public class KafkaConfiguration {
     private String username;
     @Value("${spring.kafka.sasl.password}")
     private String password;
+    @Value("${spring.kafka.backoff.interval}")
+    private Long interval;
+    @Value("${spring.kafka.backoff.max-failure}")
+    private Long failures;
 
     @Bean
     public NewTopic topicWip() {
@@ -72,9 +80,17 @@ public class KafkaConfiguration {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, ImageDone>();
 
         factory.setConsumerFactory(imageDoneConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
+    }
+
+    @Bean
+    public DefaultErrorHandler errorHandler() {
+        var fixedBackOff = new FixedBackOff(interval, failures);
+        return new DefaultErrorHandler(((consumerRecord, e) ->
+                log.error("Unable to process message, an error occurred: {}", e.getMessage(), e)), fixedBackOff);
     }
 
     private ProducerFactory<String, ImageFilterRequest> imageFilterProducerFactory() {

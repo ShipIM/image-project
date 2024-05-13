@@ -1,5 +1,6 @@
 package com.example.imageapi.service;
 
+import com.example.imageapi.api.repository.FilterRequestRepository;
 import com.example.imageapi.dto.kafka.image.ImageDone;
 import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
 import com.example.imageapi.dto.mapper.FilterMapper;
@@ -10,7 +11,6 @@ import com.example.imageapi.exception.IllegalAccessException;
 import com.example.imageapi.model.entity.FilterRequest;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
-import com.example.imageapi.api.repository.FilterRequestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;
@@ -32,9 +32,10 @@ public class FilterRequestService {
 
     @Value("${spring.kafka.topic.processing-topic}")
     private String processing;
-
-    private static final Integer MAX_ATTEMPTS = 3;
-    private static final Long BACKOFF_PERIOD = 500L;
+    @Value("${spring.kafka.backoff.interval}")
+    private Long interval;
+    @Value("${spring.kafka.backoff.max-failure}")
+    private Long failures;
 
     private final FilterRequestRepository filterRequestRepository;
     private final ImageService imageService;
@@ -61,7 +62,7 @@ public class FilterRequestService {
 
     private void sendRequest(ImageFilterRequest request) {
         int attempts = 0;
-        while (attempts < MAX_ATTEMPTS) {
+        while (attempts < failures) {
             try {
                 try {
                     kafkaTemplate.send(processing, request).get();
@@ -70,7 +71,7 @@ public class FilterRequestService {
                 } catch (ExecutionException e) {
                     attempts++;
 
-                    Thread.sleep(BACKOFF_PERIOD);
+                    Thread.sleep(interval);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -112,7 +113,7 @@ public class FilterRequestService {
         if (filterRequest.getStatus().equals(ImageStatus.DONE)) {
             return;
         }
-        
+
         var modifiedImageId = imageDone.getImageId();
 
         filterRequest.setModifiedId(modifiedImageId);

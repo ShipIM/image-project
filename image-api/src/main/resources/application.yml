@@ -22,9 +22,12 @@ spring:
     topic:
       processing-topic: "images.wip"
       done-topic: "images.done"
-      partitions-number: 1
+      partitions-number: 2
       replication-factor: 3
       isr: 2
+    backoff:
+      interval: 500
+      max-failure: 3
 
 jwt:
   secret:

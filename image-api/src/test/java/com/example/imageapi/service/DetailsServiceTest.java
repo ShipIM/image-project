@@ -1,10 +1,10 @@
 package com.example.imageapi.service;
 
 import com.example.imageapi.api.repository.PrivilegeRepository;
+import com.example.imageapi.api.repository.UserRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.model.entity.User;
-import com.example.imageapi.api.repository.UserRepository;
 import com.example.imageapi.model.enumeration.RoleEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

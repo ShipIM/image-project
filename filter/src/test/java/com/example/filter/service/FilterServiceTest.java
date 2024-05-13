@@ -3,7 +3,6 @@ package com.example.filter.service;
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
 import com.example.filter.api.repository.ProcessedRepository;
 import com.example.filter.config.BaseTest;
-import com.example.filter.dto.kafka.image.ImageDone;
 import com.example.filter.dto.kafka.image.ImageFilterRequest;
 import com.example.filter.model.entity.Processed;
 import com.example.filter.model.enumeration.FilterType;
@@ -17,7 +16,6 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

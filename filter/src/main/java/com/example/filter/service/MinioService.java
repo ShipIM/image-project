@@ -4,7 +4,6 @@ import com.example.filter.config.minio.MinioProperties;
 import com.example.filter.exception.UncheckedMinioException;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
-import io.minio.errors.MinioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

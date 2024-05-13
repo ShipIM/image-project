@@ -1,9 +1,9 @@
 package com.example.imageapi.service;
 
 import com.example.imageapi.api.repository.PrivilegeRepository;
+import com.example.imageapi.api.repository.UserRepository;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.model.entity.User;
-import com.example.imageapi.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
