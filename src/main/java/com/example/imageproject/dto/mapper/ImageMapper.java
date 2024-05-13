@@ -17,8 +17,6 @@ public interface ImageMapper {
 
     ImageResponse toResponse(Image image);
 
-    Image toImage(String reference);
-
     List<ImageResponse> toResponseList(List<Image> images);
 
     UploadImageResponse toUploadResponse(String imageId);
