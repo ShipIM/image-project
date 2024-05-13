@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="ShipIM" id="23-03-2024--3-create-role-privilege-table">
+        <createTable tableName="role_privilege">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints
+                        primaryKey="true"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints
+                        nullable="false"/>
+            </column>
+            <column name="privilege_id" type="BIGINT">
+                <constraints
+                        nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="role_privilege" baseColumnNames="role_id"
+                                 constraintName="fk_role_privilege_role"
+                                 referencedTableName="role" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="role_privilege" baseColumnNames="privilege_id"
+                                 constraintName="fk_role_privilege_privilege"
+                                 referencedTableName="privilege" referencedColumnNames="id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>
