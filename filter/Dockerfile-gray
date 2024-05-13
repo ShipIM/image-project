@@ -1,0 +1,5 @@
+FROM openjdk:17-oracle
+ARG JAR_FILE=./filter/target/*.jar
+COPY ${JAR_FILE} filter.jar
+EXPOSE 8081
+ENTRYPOINT ["java", "-Dspring.profiles.active=gray", "-jar", "/filter.jar"]

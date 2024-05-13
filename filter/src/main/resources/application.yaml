@@ -1,0 +1,29 @@
+spring:
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.xml
+  kafka:
+    bootstrap-servers:
+      - localhost:9092
+      - localhost:9093
+      - localhost:9094
+    sasl:
+      username: admin
+      password: password
+    topic:
+      processing-topic: "images.wip"
+      done-topic: "images.done"
+      partitions-number: 1
+      replication-factor: 3
+      isr: 2
+    backoff:
+      interval: 500
+      max-failure: 3
+
+minio:
+  url: http://localhost:9000
+  accessKey: user
+  secretKey: password
+  bucket: image-storage
+  image-size: 10485760
+  tmp-tag: tmp/
+  ttl: 1

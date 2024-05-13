@@ -1,16 +1,16 @@
 version: '3'
 
 services:
-  api:
-    image: 'shipim/api:1.0.0'
+  image-api:
+    image: 'shipim/image-api:1.0.0'
     container_name: 'image-api'
     build:
       context: .
-      dockerfile: ./api/Dockerfile
+      dockerfile: ./image-api/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
-      - 'postgres'
+      - 'image-postgres'
       - 'minio'
       - 'kafka-1'
       - 'kafka-2'
@@ -19,7 +19,61 @@ services:
       - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/api'
       - 'MINIO_URL=http://image-minio:9000'
       - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
-  postgres:
+  filter-gray:
+    image: 'shipim/filter-gray:1.0.0'
+    container_name: 'filter-gray'
+    build:
+      context: .
+      dockerfile: ./filter/Dockerfile-gray
+    ports:
+      - "8081:8081"
+    depends_on:
+      - 'image-postgres'
+      - 'minio'
+      - 'kafka-1'
+      - 'kafka-2'
+      - 'kafka-3'
+    environment:
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/gray'
+      - 'MINIO_URL=http://image-minio:9000'
+      - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
+  filter-gauss:
+    image: 'shipim/filter-gauss:1.0.0'
+    container_name: 'filter-gauss'
+    build:
+      context: .
+      dockerfile: ./filter/Dockerfile-gauss
+    ports:
+      - "8082:8082"
+    depends_on:
+      - 'image-postgres'
+      - 'minio'
+      - 'kafka-1'
+      - 'kafka-2'
+      - 'kafka-3'
+    environment:
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/gauss'
+      - 'MINIO_URL=http://image-minio:9000'
+      - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
+  filter-threshold:
+    image: 'shipim/filter-threshold:1.0.0'
+    container_name: 'filter-threshold'
+    build:
+      context: .
+      dockerfile: ./filter/Dockerfile-threshold
+    ports:
+      - "8083:8083"
+    depends_on:
+      - 'image-postgres'
+      - 'minio'
+      - 'kafka-1'
+      - 'kafka-2'
+      - 'kafka-3'
+    environment:
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/threshold'
+      - 'MINIO_URL=http://image-minio:9000'
+      - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
+  image-postgres:
     image: 'postgres:latest'
     container_name: 'image-postgres'
     ports:
@@ -30,7 +84,7 @@ services:
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_PASSWORD=postgres'
       - 'POSTGRES_HOST_AUTH_METHOD=trust'
-      - 'POSTGRES_MULTIPLE_DATABASES=api'
+      - 'POSTGRES_MULTIPLE_DATABASES=api,gray,gauss,threshold'
   minio:
     image: minio/minio:latest
     container_name: 'image-minio'
@@ -58,7 +112,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,DOCKER:SASL_PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 1
       ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/configs/kafka_server_jaas.conf"
@@ -78,7 +131,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,DOCKER:SASL_PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 2
       ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf"
@@ -98,7 +150,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,DOCKER:SASL_PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_BROKER_ID: 3
       ZOOKEEPER_SASL_ENABLED: "false"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf"
