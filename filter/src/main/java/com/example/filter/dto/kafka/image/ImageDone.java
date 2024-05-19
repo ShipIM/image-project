@@ -1,5 +1,6 @@
 package com.example.filter.dto.kafka.image;
 
+import com.example.filter.model.enumeration.ImageStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,9 @@ public class ImageDone {
     private String imageId;
 
     private String requestId;
+
+    private ImageStatus status;
+
+    private String message;
 
 }

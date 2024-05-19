@@ -1,6 +1,7 @@
 package com.example.filter.imagefilter;
 
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.enumeration.FilterType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -39,7 +40,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
         this.restClient = restClient;
     }
 
-    public byte[] convert(byte[] imageBytes) {
+    public byte[] convert(byte[] imageBytes) throws ConversionFailedException {
         try {
             var map = new LinkedMultiValueMap<String, byte[]>();
             map.add("image", imageBytes);
@@ -55,8 +56,6 @@ public class RecognitionFilter extends ConcreteImageFilter {
             } else if (uploadsResponse.getStatus().type.equals("error")) {
                 throw new RuntimeException(uploadsResponse.status.text);
             }
-
-            System.out.println(uploadsResponse.result.uploadId);
 
             var tagsResponse = restClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/tags")
@@ -76,10 +75,15 @@ public class RecognitionFilter extends ConcreteImageFilter {
             return applyText(imageBytes, text);
         } catch (Exception e) {
             log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
-        }
 
-        return imageBytes;
+            throw new ConversionFailedException("Unable to apply Recognition filter, an error occurred");
+        }
     }
+
+    //TODO: -1. Почему-то null вместо пустой строки в DONE ответе
+    //TODO: 0. Нормально сделать текст на изображении
+    //TODO: 1. Нормально хэндлить ошибки с imagga
+    //TODO: 2. Сделать всё что требуется в задании
 
     private byte[] applyText(byte[] imageBytes, String text) throws IOException {
         var inputStream = new ByteArrayInputStream(imageBytes);

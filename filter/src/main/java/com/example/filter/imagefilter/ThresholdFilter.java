@@ -1,6 +1,7 @@
 package com.example.filter.imagefilter;
 
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class ThresholdFilter extends ConcreteImageFilter {
         super(FilterType.THRESHOLD);
     }
 
-    public byte[] convert(byte[] imageBytes) {
+    public byte[] convert(byte[] imageBytes) throws ConversionFailedException {
         try {
             var inputStream = new ByteArrayInputStream(imageBytes);
             var imageInputStream = ImageIO.createImageInputStream(inputStream);
@@ -50,9 +51,9 @@ public class ThresholdFilter extends ConcreteImageFilter {
             return outputStream.toByteArray();
         } catch (IOException e) {
             log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
-        }
 
-        return imageBytes;
+            throw new ConversionFailedException("Unable to apply Threshold filter, an error occurred");
+        }
     }
 
     @RequiredArgsConstructor
