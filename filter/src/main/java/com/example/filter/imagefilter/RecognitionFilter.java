@@ -14,13 +14,12 @@ import org.springframework.web.client.RestClient;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.font.TextAttribute;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.AttributedString;
-import java.util.*;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Profile(value = "recognition")
@@ -80,11 +79,6 @@ public class RecognitionFilter extends ConcreteImageFilter {
         }
     }
 
-    //TODO: -1. Почему-то null вместо пустой строки в DONE ответе
-    //TODO: 0. Нормально сделать текст на изображении
-    //TODO: 1. Нормально хэндлить ошибки с imagga
-    //TODO: 2. Сделать всё что требуется в задании
-
     private byte[] applyText(byte[] imageBytes, String text) throws IOException {
         var inputStream = new ByteArrayInputStream(imageBytes);
         var imageInputStream = ImageIO.createImageInputStream(inputStream);
@@ -96,30 +90,17 @@ public class RecognitionFilter extends ConcreteImageFilter {
         var image = ImageIO.read(imageInputStream);
         var graphics = image.getGraphics();
 
-        var attributedText = new AttributedString(text);
-        attributedText.addAttribute(TextAttribute.FOREGROUND, COLOR);
+        var fontSize = image.getHeight() * 0.05f;
+        var suitableFont = FONT.deriveFont(FONT.getStyle(), fontSize);
 
-        var metrics = graphics.getFontMetrics(FONT);
-        var positionX = (image.getWidth() - metrics.stringWidth(text)) / 2;
-        var positionY = (image.getHeight() - metrics.getHeight()) / 2 + metrics.getAscent();
+        graphics.setFont(suitableFont);
+        graphics.setColor(COLOR);
 
-        var ruler = graphics.getFontMetrics(FONT);
-        var vector = FONT.createGlyphVector(ruler.getFontRenderContext(), text);
+        var metrics = graphics.getFontMetrics(suitableFont);
+        var positionX = (int) (image.getWidth() * 0.02);
+        var positionY = (int) (image.getHeight() - metrics.getDescent() - image.getHeight() * 0.02);
 
-        var outline = vector.getOutline(0, 0);
-
-        var expectedWidth = outline.getBounds().getWidth();
-        var expectedHeight = outline.getBounds().getHeight();
-
-        var widthBasedFontSize = (FONT.getSize2D() * image.getWidth()) / expectedWidth;
-        var heightBasedFontSize = (FONT.getSize2D() * image.getHeight()) / expectedHeight;
-
-        var newFontSize = Math.min(widthBasedFontSize, heightBasedFontSize);
-        var suitableFont = FONT.deriveFont(FONT.getStyle(), (float) newFontSize);
-
-        attributedText.addAttribute(TextAttribute.FONT, suitableFont);
-
-        graphics.drawString(attributedText.getIterator(), positionX, positionY);
+        graphics.drawString(text, positionX, positionY);
 
         var outputStream = new ByteArrayOutputStream();
         ImageIO.write(image, formatName, outputStream);
@@ -145,30 +126,30 @@ public class RecognitionFilter extends ConcreteImageFilter {
     }
 
     @Data
-    public static class TagsResponse {
+    private static class TagsResponse {
 
         private TagsResult result;
 
         private ResponseStatus status;
 
         @Data
-        public static class TagsResult {
+        private static class TagsResult {
 
             private List<Tag> tags;
 
         }
 
         @Data
-        public static class Tag {
+        private static class Tag {
 
-            private double confidence;
+            private Double confidence;
 
             private TagDetail tag;
 
         }
 
         @Data
-        public static class TagDetail {
+        private static class TagDetail {
 
             private String en;
 
