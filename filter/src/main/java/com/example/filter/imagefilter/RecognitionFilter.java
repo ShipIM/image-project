@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RecognitionFilter extends ConcreteImageFilter {
 
-    private static final Font FONT = new Font("Arial", Font.BOLD, 18);
-    private static final Color COLOR = Color.BLACK;
     private static final Integer TAGS_LIMIT = 3;
 
     private final RestClient restClient;
@@ -90,15 +88,29 @@ public class RecognitionFilter extends ConcreteImageFilter {
         var image = ImageIO.read(imageInputStream);
         var graphics = image.getGraphics();
 
-        var fontSize = image.getHeight() * 0.05f;
-        var suitableFont = FONT.deriveFont(FONT.getStyle(), fontSize);
+        var font = new Font("Arial", Font.BOLD, 18);
 
+        var fontSize = image.getWidth() * 0.05f;
+        var suitableFont = font.deriveFont(font.getStyle(), fontSize);
         graphics.setFont(suitableFont);
-        graphics.setColor(COLOR);
 
         var metrics = graphics.getFontMetrics(suitableFont);
+        var textWidth = metrics.stringWidth(text);
+
+        while (textWidth > image.getWidth() * 0.96f) {
+            fontSize *= 0.95;
+            suitableFont = font.deriveFont(font.getStyle(), fontSize);
+
+            graphics.setFont(suitableFont);
+            metrics = graphics.getFontMetrics(suitableFont);
+            textWidth = metrics.stringWidth(text);
+        }
+
         var positionX = (int) (image.getWidth() * 0.02);
         var positionY = (int) (image.getHeight() - metrics.getDescent() - image.getHeight() * 0.02);
+
+        graphics.setFont(suitableFont);
+        graphics.setColor(Color.BLACK);
 
         graphics.drawString(text, positionX, positionY);
 
