@@ -56,7 +56,7 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 requestId, 1L);
         var result = filterRequestRepository.save(filterRequest);
 
@@ -99,7 +99,7 @@ public class FilterRequestServiceTest extends BaseTest {
         var anotherImage = new Image(null, "filename", 1L, another, userId);
         imageRepository.save(anotherImage);
 
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, another, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", another, null,
                 "requestId", userId);
         filterRequestRepository.save(filterRequest);
 
@@ -129,18 +129,25 @@ public class FilterRequestServiceTest extends BaseTest {
         var userId = 1L;
         var imageId = "originalId";
 
-        var filterRequestWip = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequestWip = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 "requestId", userId);
-        var expectedResponseWip = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.WIP);
+        var expectedResponseWip = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.WIP, "");
 
         var modifiedImageId = "modifiedId";
-        var filterRequestDone = new FilterRequest(null, ImageStatus.DONE, imageId, modifiedImageId,
+        var filterRequestDone = new FilterRequest(null, ImageStatus.DONE, "", imageId, modifiedImageId,
                 "requestId", userId);
-        var expectedResponseDone = new GetModifiedImageByRequestIdResponse(modifiedImageId, ImageStatus.DONE);
+        var expectedResponseDone = new GetModifiedImageByRequestIdResponse(modifiedImageId, ImageStatus.DONE,
+                "");
+
+        var filterRequestFail = new FilterRequest(null, ImageStatus.FAIL, "Fail", imageId, modifiedImageId,
+                "requestId", userId);
+        var expectedResponseFail = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.FAIL,
+                "Fail");
 
         return Stream.of(
                 Arguments.of(filterRequestWip, expectedResponseWip),
-                Arguments.of(filterRequestDone, expectedResponseDone)
+                Arguments.of(filterRequestDone, expectedResponseDone),
+                Arguments.of(filterRequestFail, expectedResponseFail)
         );
     }
 
@@ -226,7 +233,7 @@ public class FilterRequestServiceTest extends BaseTest {
     }
 
     @Test
-    public void consume_Success() {
+    public void consume_Success_RequestDone() {
         var userId = 1L;
         var imageId = "originalId";
         var modifiedImageId = "modifiedId";
@@ -234,21 +241,53 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 requestId, 1L);
         filterRequestRepository.save(filterRequest);
 
         var acknowledgment = Mockito.mock(Acknowledgment.class);
         Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
 
-        filterRequestService.consume(new ImageDone(modifiedImageId, requestId), acknowledgment);
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.DONE, ""),
+                acknowledgment);
 
         Mockito.verify(acknowledgment, Mockito.times(1)).acknowledge();
 
         var request = filterRequestService.getFilterRequestByRequestId(requestId);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(ImageStatus.DONE, request.getStatus()),
-                () -> Assertions.assertEquals(modifiedImageId, request.getModifiedId())
+                () -> Assertions.assertEquals(modifiedImageId, request.getModifiedId()),
+                () -> Assertions.assertEquals("", request.getMessage())
+        );
+    }
+
+    @Test
+    public void consume_Success_RequestFail() {
+        var userId = 1L;
+        var imageId = "originalId";
+        var modifiedImageId = "modifiedId";
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var requestId = "requestId";
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
+                requestId, 1L);
+        filterRequestRepository.save(filterRequest);
+
+        var acknowledgment = Mockito.mock(Acknowledgment.class);
+        Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
+
+        var failMessage = "Fail";
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.FAIL, failMessage),
+                acknowledgment);
+
+        Mockito.verify(acknowledgment, Mockito.times(1)).acknowledge();
+
+        var request = filterRequestService.getFilterRequestByRequestId(requestId);
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(ImageStatus.FAIL, request.getStatus()),
+                () -> Assertions.assertNull(request.getModifiedId()),
+                () -> Assertions.assertEquals(failMessage, request.getMessage())
         );
     }
 
@@ -261,13 +300,14 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.DONE, imageId, modifiedImageId,
+        var filterRequest = new FilterRequest(null, ImageStatus.DONE, "", imageId, modifiedImageId,
                 requestId, 1L);
         filterRequestRepository.save(filterRequest);
 
         var acknowledgment = Mockito.mock(Acknowledgment.class);
 
-        filterRequestService.consume(new ImageDone(modifiedImageId, requestId), acknowledgment);
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.DONE, ""),
+                acknowledgment);
 
         Mockito.verify(acknowledgment, Mockito.never()).acknowledge();
         Mockito.verify(minioService, Mockito.never()).download(Mockito.any());

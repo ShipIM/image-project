@@ -19,6 +19,8 @@ public class FilterRequest {
 
     private ImageStatus status = ImageStatus.WIP;
 
+    private String message = "";
+
     @Column("original_image_id")
     private String originalId;
 

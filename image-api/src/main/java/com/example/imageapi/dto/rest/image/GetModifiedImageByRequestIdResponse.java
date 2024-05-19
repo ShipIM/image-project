@@ -18,4 +18,7 @@ public class GetModifiedImageByRequestIdResponse {
     @Schema(description = "Статус обработки файла", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
     private ImageStatus status;
 
+    @Schema(description = "Дополнительная информация", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String message;
+
 }

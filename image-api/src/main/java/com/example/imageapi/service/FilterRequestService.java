@@ -92,8 +92,10 @@ public class FilterRequestService {
             throw new EntityNotFoundException("There is no request for this image with such an id");
         }
 
-        return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.WIP ?
-                filterRequest.getOriginalId() : filterRequest.getModifiedId(), filterRequest.getStatus());
+        return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.DONE ?
+                filterRequest.getModifiedId() : filterRequest.getOriginalId(),
+                filterRequest.getStatus(),
+                filterRequest.getMessage());
     }
 
     public FilterRequest getFilterRequestByRequestId(String requestId) {
@@ -110,17 +112,24 @@ public class FilterRequestService {
     )
     public void consume(ImageDone imageDone, Acknowledgment acknowledgment) {
         var filterRequest = getFilterRequestByRequestId(imageDone.getRequestId());
-        if (filterRequest.getStatus().equals(ImageStatus.DONE)) {
+        if (filterRequest.getStatus().equals(ImageStatus.DONE) || filterRequest.getStatus().equals(ImageStatus.FAIL)) {
             return;
         }
 
-        var modifiedImageId = imageDone.getImageId();
+        var status = imageDone.getStatus();
+        if (status.equals(ImageStatus.DONE)) {
+            var modifiedImageId = imageDone.getImageId();
 
-        filterRequest.setModifiedId(modifiedImageId);
-        filterRequest.setStatus(ImageStatus.DONE);
+            filterRequest.setModifiedId(modifiedImageId);
+            filterRequest.setStatus(ImageStatus.DONE);
+
+            imageService.saveImage(filterRequest.getOriginalId(), modifiedImageId);
+        } else {
+            filterRequest.setStatus(ImageStatus.FAIL);
+            filterRequest.setMessage(imageDone.getMessage());
+        }
+
         filterRequestRepository.save(filterRequest);
-
-        imageService.saveImage(filterRequest.getOriginalId(), modifiedImageId);
 
         acknowledgment.acknowledge();
     }
