@@ -1,0 +1,15 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/recognition
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  kafka:
+    consumer:
+      group-id: images.wip-consumer-group-4
+  rest-client:
+    base-uri: https://api.imagga.com/v2
+    basic: Basic YWNjXzRiZDUxOGNmNWRlNWZkMTpmOWFlZWRjYWE2MGFhMWVmNmI3YzcwN2RjNDRkODg2Mg==

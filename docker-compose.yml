@@ -73,6 +73,24 @@ services:
       - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/threshold'
       - 'MINIO_URL=http://image-minio:9000'
       - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
+  filter-recognition:
+    image: 'shipim/filter-recognition:1.0.0'
+    container_name: 'filter-recognition'
+    build:
+      context: .
+      dockerfile: ./filter/Dockerfile-recognition
+    ports:
+      - "8084:8084"
+    depends_on:
+      - 'image-postgres'
+      - 'minio'
+      - 'kafka-1'
+      - 'kafka-2'
+      - 'kafka-3'
+    environment:
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/recognition'
+      - 'MINIO_URL=http://image-minio:9000'
+      - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
   image-postgres:
     image: 'postgres:latest'
     container_name: 'image-postgres'
@@ -84,7 +102,7 @@ services:
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_PASSWORD=postgres'
       - 'POSTGRES_HOST_AUTH_METHOD=trust'
-      - 'POSTGRES_MULTIPLE_DATABASES=api,gray,gauss,threshold'
+      - 'POSTGRES_MULTIPLE_DATABASES=api,gray,gauss,threshold,recognition'
   minio:
     image: minio/minio:latest
     container_name: 'image-minio'

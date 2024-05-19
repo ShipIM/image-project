@@ -182,6 +182,7 @@ paths:
                 - GRAY
                 - GAUSS
                 - THRESHOLD
+                - RECOGNITION
       responses:
         '200':
           description: Успех выполнения операции
