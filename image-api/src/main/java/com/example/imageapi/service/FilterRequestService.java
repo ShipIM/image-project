@@ -8,9 +8,13 @@ import com.example.imageapi.dto.rest.image.ApplyImageFiltersResponse;
 import com.example.imageapi.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
+import com.example.imageapi.exception.TooManyRequestsException;
 import com.example.imageapi.model.entity.FilterRequest;
+import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;
@@ -18,12 +22,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -42,10 +48,22 @@ public class FilterRequestService {
     private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     private final FilterMapper imageFilterMapper;
 
+    private final Supplier<BucketConfiguration> bucketConfiguration;
+    private final ProxyManager<String> proxyManager;
+
     @Transactional
     public ApplyImageFiltersResponse createRequest(String imageId, List<FilterType> filters) {
         if (!imageService.validateAccess(imageId)) {
             throw new IllegalAccessException("You are not the owner of this image");
+        }
+
+        if (filters.contains(FilterType.RECOGNITION)) {
+             var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+             var bucket = proxyManager.builder().build(auth.getUsername(), bucketConfiguration);
+
+             if (!bucket.tryConsume(1)) {
+                 throw new TooManyRequestsException("Too many requests per period");
+             }
         }
 
         var image = imageService.getImageByImageId(imageId);

@@ -25,5 +25,5 @@ integration:
   breaker-failure-rate-threshold: 50
   breaker-sliding-window-size: 10
   breaker-wait-duration-in-open-state: 10000
-  rate-limiter-bucket-capacity: 1
-  rate-limiter-refill-period: 60000
+  rate-limiter-bucket-capacity: 1000
+  rate-limiter-refill-period: 2419200000

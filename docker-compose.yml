@@ -12,6 +12,7 @@ services:
     depends_on:
       - 'image-postgres'
       - 'image-minio'
+      - 'image-redis'
       - 'kafka-1'
       - 'kafka-2'
       - 'kafka-3'
@@ -19,6 +20,7 @@ services:
       - 'SPRING_DATASOURCE_URL=jdbc:postgresql://image-postgres:5432/api'
       - 'MINIO_URL=http://image-minio:9000'
       - 'SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093,kafka-3:19094'
+      - 'REDIS_HOST=image-redis'
   filter-gray:
     image: 'shipim/filter-gray:1.0.0'
     container_name: 'filter-gray'

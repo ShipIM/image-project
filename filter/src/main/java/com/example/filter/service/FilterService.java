@@ -50,8 +50,6 @@ public class FilterService {
             return;
         }
 
-        imageFilterRequest.getFilters().remove(0);
-
         var original = minioService.download(imageFilterRequest.getImageId());
 
         var modifiedId = generateUUID();
@@ -62,6 +60,8 @@ public class FilterService {
                         imageFilterRequest.getRequestId()));
 
                 var modified = filter.convert(original);
+
+                imageFilterRequest.getFilters().remove(0);
 
                 if (imageFilterRequest.getFilters().isEmpty()) {
                     minioService.uploadFile(modified, modifiedId);
