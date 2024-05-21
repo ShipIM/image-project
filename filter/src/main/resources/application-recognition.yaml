@@ -13,3 +13,17 @@ spring:
   rest-client:
     base-uri: https://api.imagga.com/v2
     basic: Basic YWNjXzRiZDUxOGNmNWRlNWZkMTpmOWFlZWRjYWE2MGFhMWVmNmI3YzcwN2RjNDRkODg2Mg==
+
+redis:
+  host: localhost
+  port: 6379
+
+integration:
+  target-service-name: imagga
+  retry-max-attempts: 3
+  retry-wait-duration: 500
+  breaker-failure-rate-threshold: 50
+  breaker-sliding-window-size: 10
+  breaker-wait-duration-in-open-state: 10000
+  rate-limiter-bucket-capacity: 1
+  rate-limiter-refill-period: 60000

@@ -2,11 +2,17 @@ package com.example.filter.imagefilter;
 
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
 import com.example.filter.exception.ConversionFailedException;
+import com.example.filter.exception.RetryableException;
 import com.example.filter.model.enumeration.FilterType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.bucket4j.Bucket;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.retry.Retry;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -19,7 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Profile(value = "recognition")
@@ -31,38 +36,59 @@ public class RecognitionFilter extends ConcreteImageFilter {
 
     private final RestClient restClient;
 
-    public RecognitionFilter(RestClient restClient) {
+    private final Retry retry;
+    private final CircuitBreaker circuitBreaker;
+    private final Bucket bucket;
+
+    public RecognitionFilter(RestClient restClient, Retry retry, CircuitBreaker circuitBreaker, Bucket bucket) {
         super(FilterType.RECOGNITION);
 
         this.restClient = restClient;
+
+        this.retry = retry;
+        this.circuitBreaker = circuitBreaker;
+        this.bucket = bucket;
     }
 
     public byte[] convert(byte[] imageBytes) throws ConversionFailedException {
+        if (!bucket.tryConsume(1)) {
+            throw new ConversionFailedException("Too many requests to target service per period");
+        }
+
         try {
             var map = new LinkedMultiValueMap<String, byte[]>();
             map.add("image", imageBytes);
 
-            var uploadsResponse = restClient.post()
-                    .uri("/uploads")
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(map)
-                    .retrieve()
-                    .body(UploadsResponse.class);
-            if (Objects.isNull(uploadsResponse)) {
-                throw new RuntimeException("uploads response is null, can't process");
-            } else if (uploadsResponse.getStatus().type.equals("error")) {
-                throw new RuntimeException(uploadsResponse.status.text);
-            }
+            var uploadsResponse = retry.executeSupplier(() ->
+                    circuitBreaker.executeSupplier(() ->
+                            restClient.post()
+                                    .uri("/uploads")
+                                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                                    .body(map)
+                                    .retrieve()
+                                    .onStatus(httpStatusCode ->
+                                                    httpStatusCode.equals(HttpStatus.TOO_MANY_REQUESTS) ||
+                                                            httpStatusCode.is5xxServerError(),
+                                            (request, response) -> {
+                                                throw new RetryableException(response.getStatusText());
+                                            })
+                                    .body(UploadsResponse.class)));
 
-            var tagsResponse = restClient.get()
-                    .uri(uriBuilder -> uriBuilder.path("/tags")
-                            .queryParam("image_upload_id", uploadsResponse.result.uploadId)
-                            .build())
-                    .retrieve()
-                    .body(TagsResponse.class);
-            if (Objects.isNull(tagsResponse)) {
-                throw new RuntimeException("tags response is null, can't process");
-            }
+            var tagsResponse = retry.executeSupplier(() ->
+                    circuitBreaker.executeSupplier(() ->
+                            restClient.get()
+                                    .uri(uriBuilder -> uriBuilder.path("/tags")
+                                            .queryParam("image_upload_id", uploadsResponse.result.uploadId)
+                                            .build())
+                                    .retrieve()
+                                    .onStatus(httpStatusCode ->
+                                                    httpStatusCode.equals(HttpStatus.TOO_MANY_REQUESTS) ||
+                                                            httpStatusCode.is5xxServerError(),
+                                            (request, response) -> {
+                                                throw new RetryableException(response.getStatusText());
+                                            })
+                                    .body(TagsResponse.class)));
+
             var text = tagsResponse.result.tags.stream()
                     .sorted(Comparator.comparingDouble(a -> -1 * a.confidence))
                     .limit(TAGS_LIMIT)
@@ -70,7 +96,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
                     .collect(Collectors.joining(", "));
 
             return applyText(imageBytes, text);
-        } catch (Exception e) {
+        } catch (RetryableException | CallNotPermittedException | IOException e) {
             log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
 
             throw new ConversionFailedException("Unable to apply Recognition filter, an error occurred");
