@@ -9,8 +9,11 @@ import io.github.bucket4j.Bucket;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,7 +35,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RecognitionFilter extends ConcreteImageFilter {
 
-    private static final Integer TAGS_LIMIT = 3;
+    @Value("${filter.tags-limit}")
+    private Integer TAGS_LIMIT;
 
     private final RestClient restClient;
 
@@ -146,15 +150,19 @@ public class RecognitionFilter extends ConcreteImageFilter {
         return outputStream.toByteArray();
     }
 
-    @Data
-    private static class UploadsResponse {
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class UploadsResponse {
 
         private UploadsResult result;
 
         private ResponseStatus status;
 
-        @Data
-        private static class UploadsResult {
+        @Getter
+        @Setter
+        @AllArgsConstructor
+        public static class UploadsResult {
 
             @JsonProperty("upload_id")
             private String uploadId;
@@ -163,22 +171,28 @@ public class RecognitionFilter extends ConcreteImageFilter {
 
     }
 
-    @Data
-    private static class TagsResponse {
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class TagsResponse {
 
         private TagsResult result;
 
         private ResponseStatus status;
 
-        @Data
-        private static class TagsResult {
+        @Getter
+        @Setter
+        @AllArgsConstructor
+        public static class TagsResult {
 
             private List<Tag> tags;
 
         }
 
-        @Data
-        private static class Tag {
+        @Getter
+        @Setter
+        @AllArgsConstructor
+        public static class Tag {
 
             private Double confidence;
 
@@ -186,8 +200,10 @@ public class RecognitionFilter extends ConcreteImageFilter {
 
         }
 
-        @Data
-        private static class TagDetail {
+        @Getter
+        @Setter
+        @AllArgsConstructor
+        public static class TagDetail {
 
             private String en;
 
@@ -195,8 +211,10 @@ public class RecognitionFilter extends ConcreteImageFilter {
 
     }
 
-    @Data
-    private static class ResponseStatus {
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class ResponseStatus {
 
         private String text;
 

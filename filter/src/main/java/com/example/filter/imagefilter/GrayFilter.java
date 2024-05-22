@@ -5,6 +5,7 @@ import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,9 @@ import java.util.concurrent.RecursiveAction;
 @Primary
 @Slf4j
 public class GrayFilter extends ConcreteImageFilter {
+
+    @Value("${filter.threshold}")
+    private Integer THRESHOLD;
 
     public GrayFilter() {
         super(FilterType.GRAY);
@@ -60,9 +64,7 @@ public class GrayFilter extends ConcreteImageFilter {
     }
 
     @RequiredArgsConstructor
-    private static class ConvertToGrayscaleTask extends RecursiveAction {
-
-        private static final Integer THRESHOLD = 10000;
+    private class ConvertToGrayscaleTask extends RecursiveAction {
 
         private static final Double RED_WEIGHT = 0.299;
         private static final Double GREEN_WEIGHT = 0.587;

@@ -166,6 +166,7 @@
                         <exclude>**/exception/**/*</exclude>
                         <exclude>**/model/**/*</exclude>
                         <exclude>**/*Application*</exclude>
+                        <exclude>**/*filter*/*Recognition*$*.*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

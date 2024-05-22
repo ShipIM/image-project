@@ -26,6 +26,7 @@ public class RedisConfiguration {
         return RedisClient.create(RedisURI.builder()
                 .withHost(redisProperties.getHost())
                 .withPort(redisProperties.getPort())
+                .withPassword(redisProperties.getPassword().toCharArray())
                 .build());
     }
 

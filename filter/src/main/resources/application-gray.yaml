@@ -10,3 +10,6 @@ spring:
   kafka:
     consumer:
       group-id: images.wip-consumer-group-1
+
+filter:
+  threshold: 10000

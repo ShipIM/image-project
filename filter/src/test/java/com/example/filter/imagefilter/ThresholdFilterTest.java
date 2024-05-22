@@ -62,4 +62,5 @@ public class ThresholdFilterTest extends BaseTest {
     public void getFilterType() {
         Assertions.assertEquals(FilterType.THRESHOLD, thresholdFilter.getFilterType());
     }
+
 }
