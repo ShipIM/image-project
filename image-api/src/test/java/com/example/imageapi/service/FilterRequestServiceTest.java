@@ -8,12 +8,14 @@ import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
 import com.example.imageapi.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
+import com.example.imageapi.exception.TooManyRequestsException;
 import com.example.imageapi.model.entity.FilterRequest;
 import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
 import com.example.imageapi.model.enumeration.RoleEnum;
+import io.github.bucket4j.distributed.BucketProxy;
 import org.apache.kafka.common.KafkaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,8 @@ public class FilterRequestServiceTest extends BaseTest {
     private KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     @MockBean
     private MinioService minioService;
+    @MockBean
+    private BucketService bucketService;
 
     @Test
     public void getFilterRequestByRequestId_RequestExists() {
@@ -181,6 +185,10 @@ public class FilterRequestServiceTest extends BaseTest {
         Mockito.when(kafkaTemplate.send(Mockito.any(), Mockito.any())).thenReturn(future);
         Mockito.when(future.get()).thenReturn(null);
 
+        var bucket = Mockito.mock(BucketProxy.class);
+        Mockito.when(bucketService.getBucketByUsername(Mockito.anyString())).thenReturn(bucket);
+        Mockito.when(bucket.tryConsume(Mockito.anyLong())).thenReturn(true);
+
         var result = filterRequestService.createRequest(imageId, filters);
 
         Mockito.verify(kafkaTemplate, Mockito.times(1)).send(Mockito.any(), Mockito.any());
@@ -192,6 +200,27 @@ public class FilterRequestServiceTest extends BaseTest {
                 () -> Assertions.assertEquals(ImageStatus.WIP, request.getStatus()),
                 () -> Assertions.assertEquals(userId, request.getUserId())
         );
+    }
+
+    @Test
+    public void createRequest_RateLimiterLimitReached() {
+        var userId = 1L;
+        var imageId = "originalId";
+        var filters = List.of(FilterType.values());
+
+        var bucket = Mockito.mock(BucketProxy.class);
+        Mockito.when(bucketService.getBucketByUsername(Mockito.anyString())).thenReturn(bucket);
+        Mockito.when(bucket.tryConsume(Mockito.anyLong())).thenReturn(false);
+
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Assertions.assertThrows(TooManyRequestsException.class,
+                () -> filterRequestService.createRequest(imageId, filters));
     }
 
     @Test

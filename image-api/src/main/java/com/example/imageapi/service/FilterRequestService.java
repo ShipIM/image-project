@@ -47,9 +47,7 @@ public class FilterRequestService {
     private final ImageService imageService;
     private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     private final FilterMapper imageFilterMapper;
-
-    private final Supplier<BucketConfiguration> bucketConfiguration;
-    private final ProxyManager<String> proxyManager;
+    private final BucketService bucketService;
 
     @Transactional
     public ApplyImageFiltersResponse createRequest(String imageId, List<FilterType> filters) {
@@ -59,7 +57,7 @@ public class FilterRequestService {
 
         if (filters.contains(FilterType.RECOGNITION)) {
              var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-             var bucket = proxyManager.builder().build(auth.getUsername(), bucketConfiguration);
+             var bucket = bucketService.getBucketByUsername(auth.getUsername());
 
              if (!bucket.tryConsume(1)) {
                  throw new TooManyRequestsException("Too many requests per period");

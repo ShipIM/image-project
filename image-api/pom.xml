@@ -189,6 +189,7 @@
                         <exclude>**/dto/**/*</exclude>
                         <exclude>**/exception/**/*</exclude>
                         <exclude>**/filter/**/*</exclude>
+                        <exclude>**/*service*/*Bucket*</exclude>
                         <exclude>**/model/**/*</exclude>
                         <exclude>**/*Application*</exclude>
                     </excludes>
