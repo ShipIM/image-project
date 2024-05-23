@@ -8,6 +8,7 @@ import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -21,6 +22,7 @@ import org.testcontainers.utility.MountableFile;
 import java.nio.file.Paths;
 
 @SpringBootTest
+@ActiveProfiles(value = "test")
 @Testcontainers
 @DirtiesContext
 @ExtendWith(MockitoExtension.class)
@@ -54,13 +56,6 @@ public abstract class BaseTest {
                     .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/configs/kafka_server_jaas.conf")
                     .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "PLAIN")
                     .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN");
-
-    @Container
-    public static final GenericContainer<?> redisContainer =
-            new GenericContainer<>(DockerImageName.parse("redis:latest"))
-                    .withEnv("REDIS_PASSWORD", "password")
-                    .withExposedPorts(6379)
-                    .withReuse(true);
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {

@@ -5,6 +5,7 @@ import com.example.imageapi.api.repository.ImageRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.dto.kafka.image.ImageDone;
 import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
+import com.example.imageapi.dto.mapper.FilterMapper;
 import com.example.imageapi.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
@@ -16,6 +17,7 @@ import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
 import com.example.imageapi.model.enumeration.RoleEnum;
 import io.github.bucket4j.distributed.BucketProxy;
+import jakarta.annotation.PostConstruct;
 import org.apache.kafka.common.KafkaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,18 +42,26 @@ import java.util.stream.Stream;
 @Transactional
 public class FilterRequestServiceTest extends BaseTest {
 
-    @Autowired
     private FilterRequestService filterRequestService;
+
     @Autowired
     private FilterRequestRepository filterRequestRepository;
     @Autowired
     private ImageRepository imageRepository;
-    @MockBean
-    private KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private FilterMapper filterMapper;
+    private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate = Mockito.mock(KafkaTemplate.class);
     @MockBean
     private MinioService minioService;
-    @MockBean
-    private BucketService bucketService;
+    private final BucketService bucketService = Mockito.mock(BucketService.class);
+
+    @PostConstruct
+    private void initService() {
+        filterRequestService = new FilterRequestService(filterRequestRepository, imageService, kafkaTemplate,
+                filterMapper, bucketService);
+    }
 
     @Test
     public void getFilterRequestByRequestId_RequestExists() {

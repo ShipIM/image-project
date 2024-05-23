@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-@Profile(value = "threshold")
+@Profile(value = {"threshold", "test"})
 @Component
 @Slf4j
 public class ThresholdFilter extends ConcreteImageFilter {

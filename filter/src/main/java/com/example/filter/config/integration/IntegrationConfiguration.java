@@ -1,11 +1,6 @@
 package com.example.filter.config.integration;
 
 import com.example.filter.exception.RetryableException;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.distributed.proxy.ProxyManager;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.retry.Retry;
@@ -17,17 +12,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 
-@Profile("recognition")
+@Profile(value = {"recognition", "test"})
 @Configuration
 @EnableConfigurationProperties(IntegrationProperties.class)
 @RequiredArgsConstructor
 public class IntegrationConfiguration {
 
     private final IntegrationProperties properties;
-
-    private final ProxyManager<String> proxyManager;
 
     @Bean
     public Retry retry() {
@@ -49,20 +41,6 @@ public class IntegrationConfiguration {
                 .build();
 
         return CircuitBreaker.of(properties.getTargetServiceName(), circuitBreakerConfig);
-    }
-
-    @Bean
-    public Bucket bucket() {
-        return proxyManager.builder().build(properties.getTargetServiceName(), bucketConfiguration());
-    }
-
-    private Supplier<BucketConfiguration> bucketConfiguration() {
-        return () -> BucketConfiguration.builder()
-                .addLimit(Bandwidth.builder()
-                        .capacity(properties.getRateLimiterBucketCapacity())
-                        .refillIntervally(properties.getRateLimiterBucketCapacity(),
-                                Duration.ofMillis(properties.getRateLimiterRefillPeriod())).build())
-                .build();
     }
 
 }

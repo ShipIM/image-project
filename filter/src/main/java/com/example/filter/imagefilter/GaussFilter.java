@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-@Profile(value = "gauss")
+@Profile(value = {"gauss", "test"})
 @Component
 @Slf4j
 public class GaussFilter extends ConcreteImageFilter {

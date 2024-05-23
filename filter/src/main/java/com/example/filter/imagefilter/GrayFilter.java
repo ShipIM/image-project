@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-@Profile(value = "gray")
+@Profile(value = {"gray", "test"})
 @Component
 @Primary
 @Slf4j

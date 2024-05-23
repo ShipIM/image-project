@@ -11,6 +11,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 public class RecognitionFilter extends ConcreteImageFilter {
 
     @Value("${filter.tags-limit}")
-    private Integer TAGS_LIMIT;
+    private Integer TAGS_LIMIT = 3;
 
     private final RestClient restClient;
 
@@ -153,6 +154,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class UploadsResponse {
 
         private UploadsResult result;
@@ -162,6 +164,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
         @Getter
         @Setter
         @AllArgsConstructor
+        @NoArgsConstructor
         public static class UploadsResult {
 
             @JsonProperty("upload_id")
@@ -174,6 +177,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class TagsResponse {
 
         private TagsResult result;
@@ -183,6 +187,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
         @Getter
         @Setter
         @AllArgsConstructor
+        @NoArgsConstructor
         public static class TagsResult {
 
             private List<Tag> tags;
@@ -192,6 +197,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
         @Getter
         @Setter
         @AllArgsConstructor
+        @NoArgsConstructor
         public static class Tag {
 
             private Double confidence;
@@ -203,6 +209,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
         @Getter
         @Setter
         @AllArgsConstructor
+        @NoArgsConstructor
         public static class TagDetail {
 
             private String en;
@@ -214,6 +221,7 @@ public class RecognitionFilter extends ConcreteImageFilter {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ResponseStatus {
 
         private String text;

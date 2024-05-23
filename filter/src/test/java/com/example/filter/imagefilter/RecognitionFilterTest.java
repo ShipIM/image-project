@@ -5,12 +5,14 @@ import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.exception.RetryableException;
 import com.example.filter.model.enumeration.FilterType;
 import io.github.bucket4j.Bucket;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.retry.Retry;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.client.RestClient;
 
 import javax.imageio.ImageIO;
@@ -22,14 +24,21 @@ import java.util.function.Function;
 public class RecognitionFilterTest extends BaseTest {
 
     @Autowired
+    private Retry retry;
+    @Autowired
+    private CircuitBreaker circuitBreaker;
+
+    private final RestClient restClient = Mockito.mock(RestClient.class);
+    private final Bucket bucket = Mockito.mock(Bucket.class);
+
     private RecognitionFilter recognitionFilter;
 
-    @MockBean
-    private RestClient restClient;
-    @MockBean
-    private Bucket bucket;
-
     private static byte[] originalImageBytes;
+
+    @PostConstruct
+    private void initFilter() {
+        recognitionFilter = new RecognitionFilter(restClient, retry, circuitBreaker, bucket);
+    }
 
     @BeforeAll
     private static void init() throws Exception {

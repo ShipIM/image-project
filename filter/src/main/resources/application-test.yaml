@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/filter
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  kafka:
+    consumer:
+      group-id: images.wip-consumer-group-0
+  rest-client:
+    base-uri: https://api.imagga.com/v2
+    basic: Basic YWNjXzRiZDUxOGNmNWRlNWZkMTpmOWFlZWRjYWE2MGFhMWVmNmI3YzcwN2RjNDRkODg2Mg==
+
+integration:
+  target-service-name: imagga
+  retry-max-attempts: 3
+  retry-wait-duration: 500
+  breaker-failure-rate-threshold: 50
+  breaker-sliding-window-size: 10
+  breaker-wait-duration-in-open-state: 10000
+  rate-limiter-bucket-capacity: 1000
+  rate-limiter-refill-period: 2419200000
+
+filter:
+  tags-limit: 3
+  channel-threshold: 128
+  threshold: 10000
+  sigma: 3

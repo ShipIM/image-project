@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestClient;
 
-@Profile("recognition")
+@Profile(value = {"recognition", "test"})
 @Configuration
 public class WebConfiguration {
 

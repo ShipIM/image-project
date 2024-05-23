@@ -13,12 +13,11 @@ import com.example.imageapi.model.entity.FilterRequest;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.distributed.proxy.ProxyManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
@@ -29,19 +28,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
+@Profile(value = "!test")
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilterRequestService {
 
     @Value("${spring.kafka.topic.processing-topic}")
-    private String processing;
+    private String processing = "images.wip";
     @Value("${spring.kafka.backoff.interval}")
-    private Long interval;
+    private Long interval = 500L;
     @Value("${spring.kafka.backoff.max-failure}")
-    private Long failures;
+    private Long failures = 3L;
 
     private final FilterRequestRepository filterRequestRepository;
     private final ImageService imageService;
