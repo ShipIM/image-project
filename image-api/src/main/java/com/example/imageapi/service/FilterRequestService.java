@@ -8,16 +8,20 @@ import com.example.imageapi.dto.rest.image.ApplyImageFiltersResponse;
 import com.example.imageapi.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
+import com.example.imageapi.exception.TooManyRequestsException;
 import com.example.imageapi.model.entity.FilterRequest;
+import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,27 +29,38 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+@Profile(value = "!test")
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilterRequestService {
 
     @Value("${spring.kafka.topic.processing-topic}")
-    private String processing;
+    private String processing = "images.wip";
     @Value("${spring.kafka.backoff.interval}")
-    private Long interval;
+    private Long interval = 500L;
     @Value("${spring.kafka.backoff.max-failure}")
-    private Long failures;
+    private Long failures = 3L;
 
     private final FilterRequestRepository filterRequestRepository;
     private final ImageService imageService;
     private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
     private final FilterMapper imageFilterMapper;
+    private final BucketService bucketService;
 
     @Transactional
     public ApplyImageFiltersResponse createRequest(String imageId, List<FilterType> filters) {
         if (!imageService.validateAccess(imageId)) {
             throw new IllegalAccessException("You are not the owner of this image");
+        }
+
+        if (filters.contains(FilterType.RECOGNITION)) {
+             var auth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+             var bucket = bucketService.getBucketByUsername(auth.getUsername());
+
+             if (!bucket.tryConsume(1)) {
+                 throw new TooManyRequestsException("Too many requests per period");
+             }
         }
 
         var image = imageService.getImageByImageId(imageId);
@@ -92,8 +107,10 @@ public class FilterRequestService {
             throw new EntityNotFoundException("There is no request for this image with such an id");
         }
 
-        return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.WIP ?
-                filterRequest.getOriginalId() : filterRequest.getModifiedId(), filterRequest.getStatus());
+        return new GetModifiedImageByRequestIdResponse(filterRequest.getStatus() == ImageStatus.DONE ?
+                filterRequest.getModifiedId() : filterRequest.getOriginalId(),
+                filterRequest.getStatus(),
+                filterRequest.getMessage());
     }
 
     public FilterRequest getFilterRequestByRequestId(String requestId) {
@@ -110,17 +127,24 @@ public class FilterRequestService {
     )
     public void consume(ImageDone imageDone, Acknowledgment acknowledgment) {
         var filterRequest = getFilterRequestByRequestId(imageDone.getRequestId());
-        if (filterRequest.getStatus().equals(ImageStatus.DONE)) {
+        if (filterRequest.getStatus().equals(ImageStatus.DONE) || filterRequest.getStatus().equals(ImageStatus.FAIL)) {
             return;
         }
 
-        var modifiedImageId = imageDone.getImageId();
+        var status = imageDone.getStatus();
+        if (status.equals(ImageStatus.DONE)) {
+            var modifiedImageId = imageDone.getImageId();
 
-        filterRequest.setModifiedId(modifiedImageId);
-        filterRequest.setStatus(ImageStatus.DONE);
+            filterRequest.setModifiedId(modifiedImageId);
+            filterRequest.setStatus(ImageStatus.DONE);
+
+            imageService.saveImage(filterRequest.getOriginalId(), modifiedImageId);
+        } else {
+            filterRequest.setStatus(ImageStatus.FAIL);
+            filterRequest.setMessage(imageDone.getMessage());
+        }
+
         filterRequestRepository.save(filterRequest);
-
-        imageService.saveImage(filterRequest.getOriginalId(), modifiedImageId);
 
         acknowledgment.acknowledge();
     }

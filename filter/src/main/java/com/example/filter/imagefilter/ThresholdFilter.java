@@ -1,9 +1,11 @@
 package com.example.filter.imagefilter;
 
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -15,16 +17,22 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-@Profile(value = "threshold")
+@Profile(value = {"threshold", "test"})
 @Component
 @Slf4j
 public class ThresholdFilter extends ConcreteImageFilter {
+
+    @Value("${filter.channel-threshold}")
+    private Integer CHANNEL_THRESHOLD;
+
+    @Value("${filter.threshold}")
+    private Integer THRESHOLD;
 
     public ThresholdFilter() {
         super(FilterType.THRESHOLD);
     }
 
-    public byte[] convert(byte[] imageBytes) {
+    public byte[] convert(byte[] imageBytes) throws ConversionFailedException {
         try {
             var inputStream = new ByteArrayInputStream(imageBytes);
             var imageInputStream = ImageIO.createImageInputStream(inputStream);
@@ -50,17 +58,13 @@ public class ThresholdFilter extends ConcreteImageFilter {
             return outputStream.toByteArray();
         } catch (IOException e) {
             log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
-        }
 
-        return imageBytes;
+            throw new ConversionFailedException("Unable to apply Threshold filter, an error occurred");
+        }
     }
 
     @RequiredArgsConstructor
-    private static class ThresholdingTask extends RecursiveAction {
-
-        private static final Integer CHANNEL_THRESHOLD = 128;
-
-        private static final Integer THRESHOLD = 10000;
+    private class ThresholdingTask extends RecursiveAction {
 
         private final BufferedImage inputImage;
         private final BufferedImage outputImage;

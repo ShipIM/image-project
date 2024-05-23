@@ -128,6 +128,16 @@
             <version>1.19.7</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-redis</artifactId>
+            <version>8.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>6.3.2.RELEASE</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -179,6 +189,7 @@
                         <exclude>**/dto/**/*</exclude>
                         <exclude>**/exception/**/*</exclude>
                         <exclude>**/filter/**/*</exclude>
+                        <exclude>**/*service*/*Bucket*</exclude>
                         <exclude>**/model/**/*</exclude>
                         <exclude>**/*Application*</exclude>
                     </excludes>

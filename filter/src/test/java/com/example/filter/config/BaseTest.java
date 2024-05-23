@@ -21,7 +21,7 @@ import org.testcontainers.utility.MountableFile;
 import java.nio.file.Paths;
 
 @SpringBootTest
-@ActiveProfiles(value = {"gray", "gauss", "threshold"})
+@ActiveProfiles(value = "test")
 @Testcontainers
 @DirtiesContext
 @ExtendWith(MockitoExtension.class)
@@ -30,13 +30,13 @@ import java.nio.file.Paths;
 public abstract class BaseTest {
 
     @Container
-    public static PostgreSQLContainer<?> postgreSQLContainer =
+    public static final PostgreSQLContainer<?> postgreSQLContainer =
             new PostgreSQLContainer<>("postgres:latest")
                     .withReuse(true)
-                    .withDatabaseName("filter-gray");
+                    .withDatabaseName("filter");
 
     @Container
-    public static MinIOContainer minIOContainer = new MinIOContainer("minio/minio:latest")
+    public static final MinIOContainer minIOContainer = new MinIOContainer("minio/minio:latest")
             .withReuse(true)
             .withUserName("user")
             .withPassword("password");
@@ -56,7 +56,7 @@ public abstract class BaseTest {
                     .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "PLAIN")
                     .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN");
 
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             TestPropertyValues.of(
                     "spring.datasource.username=" + postgreSQLContainer.getUsername(),

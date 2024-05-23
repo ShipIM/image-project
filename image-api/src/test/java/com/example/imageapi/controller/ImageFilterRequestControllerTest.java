@@ -83,7 +83,7 @@ public class ImageFilterRequestControllerTest extends BaseTest {
     @Test
     @WithMockUser(authorities = "FILTER_READ_PRIVILEGE")
     public void getModifiedImage_Success() throws Exception {
-        var response = new GetModifiedImageByRequestIdResponse("imageId", ImageStatus.DONE);
+        var response = new GetModifiedImageByRequestIdResponse("imageId", ImageStatus.DONE, "");
 
         Mockito.when(filterRequestService.getRequest(Mockito.any(), Mockito.any())).thenReturn(response);
 

@@ -4,7 +4,9 @@ import com.example.filter.api.imagefilter.ConcreteImageFilter;
 import com.example.filter.api.repository.ProcessedRepository;
 import com.example.filter.dto.kafka.image.ImageDone;
 import com.example.filter.dto.kafka.image.ImageFilterRequest;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.entity.Processed;
+import com.example.filter.model.enumeration.ImageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,28 +50,36 @@ public class FilterService {
             return;
         }
 
-        imageFilterRequest.getFilters().remove(0);
-
         var original = minioService.download(imageFilterRequest.getImageId());
 
-        var modified = filter.convert(original);
         var modifiedId = generateUUID();
 
-        processedRepository.save(new Processed(null, imageFilterRequest.getImageId(),
-                imageFilterRequest.getRequestId()));
-
         try {
-            if (imageFilterRequest.getFilters().isEmpty()) {
-                minioService.uploadFile(modified, modifiedId);
+            try {
+                processedRepository.save(new Processed(null, imageFilterRequest.getImageId(),
+                        imageFilterRequest.getRequestId()));
 
-                var response = new ImageDone(modifiedId, imageFilterRequest.getRequestId());
+                var modified = filter.convert(original);
+
+                imageFilterRequest.getFilters().remove(0);
+
+                if (imageFilterRequest.getFilters().isEmpty()) {
+                    minioService.uploadFile(modified, modifiedId);
+
+                    var response = new ImageDone(modifiedId, imageFilterRequest.getRequestId(), ImageStatus.DONE,
+                            "");
+                    imageTemplate.send(done, response).get();
+                } else {
+                    minioService.uploadTmpFile(modified, modifiedId);
+
+                    var response = new ImageFilterRequest(modifiedId, imageFilterRequest.getRequestId(),
+                            imageFilterRequest.getFilters());
+                    imageTemplate.send(processing, response).get();
+                }
+            } catch (ConversionFailedException e) {
+                var response = new ImageDone("", imageFilterRequest.getRequestId(), ImageStatus.FAIL,
+                        e.getMessage());
                 imageTemplate.send(done, response).get();
-            } else {
-                minioService.uploadTmpFile(modified, modifiedId);
-
-                var response = new ImageFilterRequest(modifiedId, imageFilterRequest.getRequestId(),
-                        imageFilterRequest.getFilters());
-                imageTemplate.send(processing, response).get();
             }
 
             acknowledgment.acknowledge();

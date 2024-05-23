@@ -16,4 +16,5 @@
     <include file="/db/changelog/changes/23-03-2024--11-create-image-table.xml"/>
     <include file="/db/changelog/changes/09-04-2024--1-add-filter-privileges.xml"/>
     <include file="/db/changelog/changes/09-04-2024--2-create-image-filter-table.xml"/>
+    <include file="/db/changelog/changes/19-05-2024--1-add-message-column.xml"/>
 </databaseChangeLog>

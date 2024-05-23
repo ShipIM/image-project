@@ -1,9 +1,11 @@
 package com.example.filter.imagefilter;
 
 import com.example.filter.api.imagefilter.ConcreteImageFilter;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.enumeration.FilterType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -15,18 +17,21 @@ import java.io.IOException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-@Profile(value = "gauss")
+@Profile(value = {"gauss", "test"})
 @Component
 @Slf4j
 public class GaussFilter extends ConcreteImageFilter {
 
-    private final Double SIGMA = 3.;
+    @Value("${filter.sigma}")
+    private Double SIGMA;
+    @Value("${filter.threshold}")
+    private Integer THRESHOLD;
 
     public GaussFilter() {
         super(FilterType.GAUSS);
     }
 
-    public byte[] convert(byte[] imageBytes) {
+    public byte[] convert(byte[] imageBytes) throws ConversionFailedException {
         try {
             var inputStream = new ByteArrayInputStream(imageBytes);
             var imageInputStream = ImageIO.createImageInputStream(inputStream);
@@ -53,9 +58,9 @@ public class GaussFilter extends ConcreteImageFilter {
             return outputStream.toByteArray();
         } catch (IOException e) {
             log.error("Unable to perform image conversion, an error occurred: {}", e.getMessage(), e);
-        }
 
-        return imageBytes;
+            throw new ConversionFailedException("Unable to apply Gauss filter, an error occurred");
+        }
     }
 
     private double[][] createGaussianKernel(double sigma) {
@@ -92,9 +97,7 @@ public class GaussFilter extends ConcreteImageFilter {
     }
 
     @RequiredArgsConstructor
-    private static class BlurringTask extends RecursiveAction {
-
-        private static final Integer THRESHOLD = 10000;
+    private class BlurringTask extends RecursiveAction {
 
         private final BufferedImage inputImage;
         private final BufferedImage outputImage;

@@ -5,15 +5,19 @@ import com.example.imageapi.api.repository.ImageRepository;
 import com.example.imageapi.config.BaseTest;
 import com.example.imageapi.dto.kafka.image.ImageDone;
 import com.example.imageapi.dto.kafka.image.ImageFilterRequest;
+import com.example.imageapi.dto.mapper.FilterMapper;
 import com.example.imageapi.dto.rest.image.GetModifiedImageByRequestIdResponse;
 import com.example.imageapi.exception.EntityNotFoundException;
 import com.example.imageapi.exception.IllegalAccessException;
+import com.example.imageapi.exception.TooManyRequestsException;
 import com.example.imageapi.model.entity.FilterRequest;
 import com.example.imageapi.model.entity.Image;
 import com.example.imageapi.model.entity.User;
 import com.example.imageapi.model.enumeration.FilterType;
 import com.example.imageapi.model.enumeration.ImageStatus;
 import com.example.imageapi.model.enumeration.RoleEnum;
+import io.github.bucket4j.distributed.BucketProxy;
+import jakarta.annotation.PostConstruct;
 import org.apache.kafka.common.KafkaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,16 +42,26 @@ import java.util.stream.Stream;
 @Transactional
 public class FilterRequestServiceTest extends BaseTest {
 
-    @Autowired
     private FilterRequestService filterRequestService;
+
     @Autowired
     private FilterRequestRepository filterRequestRepository;
     @Autowired
     private ImageRepository imageRepository;
-    @MockBean
-    private KafkaTemplate<String, ImageFilterRequest> kafkaTemplate;
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private FilterMapper filterMapper;
+    private final KafkaTemplate<String, ImageFilterRequest> kafkaTemplate = Mockito.mock(KafkaTemplate.class);
     @MockBean
     private MinioService minioService;
+    private final BucketService bucketService = Mockito.mock(BucketService.class);
+
+    @PostConstruct
+    private void initService() {
+        filterRequestService = new FilterRequestService(filterRequestRepository, imageService, kafkaTemplate,
+                filterMapper, bucketService);
+    }
 
     @Test
     public void getFilterRequestByRequestId_RequestExists() {
@@ -56,7 +70,7 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 requestId, 1L);
         var result = filterRequestRepository.save(filterRequest);
 
@@ -99,7 +113,7 @@ public class FilterRequestServiceTest extends BaseTest {
         var anotherImage = new Image(null, "filename", 1L, another, userId);
         imageRepository.save(anotherImage);
 
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, another, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", another, null,
                 "requestId", userId);
         filterRequestRepository.save(filterRequest);
 
@@ -129,18 +143,25 @@ public class FilterRequestServiceTest extends BaseTest {
         var userId = 1L;
         var imageId = "originalId";
 
-        var filterRequestWip = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequestWip = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 "requestId", userId);
-        var expectedResponseWip = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.WIP);
+        var expectedResponseWip = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.WIP, "");
 
         var modifiedImageId = "modifiedId";
-        var filterRequestDone = new FilterRequest(null, ImageStatus.DONE, imageId, modifiedImageId,
+        var filterRequestDone = new FilterRequest(null, ImageStatus.DONE, "", imageId, modifiedImageId,
                 "requestId", userId);
-        var expectedResponseDone = new GetModifiedImageByRequestIdResponse(modifiedImageId, ImageStatus.DONE);
+        var expectedResponseDone = new GetModifiedImageByRequestIdResponse(modifiedImageId, ImageStatus.DONE,
+                "");
+
+        var filterRequestFail = new FilterRequest(null, ImageStatus.FAIL, "Fail", imageId, modifiedImageId,
+                "requestId", userId);
+        var expectedResponseFail = new GetModifiedImageByRequestIdResponse(imageId, ImageStatus.FAIL,
+                "Fail");
 
         return Stream.of(
                 Arguments.of(filterRequestWip, expectedResponseWip),
-                Arguments.of(filterRequestDone, expectedResponseDone)
+                Arguments.of(filterRequestDone, expectedResponseDone),
+                Arguments.of(filterRequestFail, expectedResponseFail)
         );
     }
 
@@ -174,6 +195,10 @@ public class FilterRequestServiceTest extends BaseTest {
         Mockito.when(kafkaTemplate.send(Mockito.any(), Mockito.any())).thenReturn(future);
         Mockito.when(future.get()).thenReturn(null);
 
+        var bucket = Mockito.mock(BucketProxy.class);
+        Mockito.when(bucketService.getBucketByUsername(Mockito.anyString())).thenReturn(bucket);
+        Mockito.when(bucket.tryConsume(Mockito.anyLong())).thenReturn(true);
+
         var result = filterRequestService.createRequest(imageId, filters);
 
         Mockito.verify(kafkaTemplate, Mockito.times(1)).send(Mockito.any(), Mockito.any());
@@ -185,6 +210,27 @@ public class FilterRequestServiceTest extends BaseTest {
                 () -> Assertions.assertEquals(ImageStatus.WIP, request.getStatus()),
                 () -> Assertions.assertEquals(userId, request.getUserId())
         );
+    }
+
+    @Test
+    public void createRequest_RateLimiterLimitReached() {
+        var userId = 1L;
+        var imageId = "originalId";
+        var filters = List.of(FilterType.values());
+
+        var bucket = Mockito.mock(BucketProxy.class);
+        Mockito.when(bucketService.getBucketByUsername(Mockito.anyString())).thenReturn(bucket);
+        Mockito.when(bucket.tryConsume(Mockito.anyLong())).thenReturn(false);
+
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var authentication = new UsernamePasswordAuthenticationToken(new User(userId, "username",
+                "password", RoleEnum.ROLE_USER, Collections.emptyList()), null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Assertions.assertThrows(TooManyRequestsException.class,
+                () -> filterRequestService.createRequest(imageId, filters));
     }
 
     @Test
@@ -226,7 +272,7 @@ public class FilterRequestServiceTest extends BaseTest {
     }
 
     @Test
-    public void consume_Success() {
+    public void consume_Success_RequestDone() {
         var userId = 1L;
         var imageId = "originalId";
         var modifiedImageId = "modifiedId";
@@ -234,21 +280,53 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.WIP, imageId, null,
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
                 requestId, 1L);
         filterRequestRepository.save(filterRequest);
 
         var acknowledgment = Mockito.mock(Acknowledgment.class);
         Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
 
-        filterRequestService.consume(new ImageDone(modifiedImageId, requestId), acknowledgment);
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.DONE, ""),
+                acknowledgment);
 
         Mockito.verify(acknowledgment, Mockito.times(1)).acknowledge();
 
         var request = filterRequestService.getFilterRequestByRequestId(requestId);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(ImageStatus.DONE, request.getStatus()),
-                () -> Assertions.assertEquals(modifiedImageId, request.getModifiedId())
+                () -> Assertions.assertEquals(modifiedImageId, request.getModifiedId()),
+                () -> Assertions.assertEquals("", request.getMessage())
+        );
+    }
+
+    @Test
+    public void consume_Success_RequestFail() {
+        var userId = 1L;
+        var imageId = "originalId";
+        var modifiedImageId = "modifiedId";
+        var image = new Image(null, "filename", 1L, imageId, userId);
+        imageRepository.save(image);
+
+        var requestId = "requestId";
+        var filterRequest = new FilterRequest(null, ImageStatus.WIP, "", imageId, null,
+                requestId, 1L);
+        filterRequestRepository.save(filterRequest);
+
+        var acknowledgment = Mockito.mock(Acknowledgment.class);
+        Mockito.when(minioService.download(Mockito.any())).thenReturn(new byte[1]);
+
+        var failMessage = "Fail";
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.FAIL, failMessage),
+                acknowledgment);
+
+        Mockito.verify(acknowledgment, Mockito.times(1)).acknowledge();
+
+        var request = filterRequestService.getFilterRequestByRequestId(requestId);
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(ImageStatus.FAIL, request.getStatus()),
+                () -> Assertions.assertNull(request.getModifiedId()),
+                () -> Assertions.assertEquals(failMessage, request.getMessage())
         );
     }
 
@@ -261,13 +339,14 @@ public class FilterRequestServiceTest extends BaseTest {
         imageRepository.save(image);
 
         var requestId = "requestId";
-        var filterRequest = new FilterRequest(null, ImageStatus.DONE, imageId, modifiedImageId,
+        var filterRequest = new FilterRequest(null, ImageStatus.DONE, "", imageId, modifiedImageId,
                 requestId, 1L);
         filterRequestRepository.save(filterRequest);
 
         var acknowledgment = Mockito.mock(Acknowledgment.class);
 
-        filterRequestService.consume(new ImageDone(modifiedImageId, requestId), acknowledgment);
+        filterRequestService.consume(new ImageDone(modifiedImageId, requestId, ImageStatus.DONE, ""),
+                acknowledgment);
 
         Mockito.verify(acknowledgment, Mockito.never()).acknowledge();
         Mockito.verify(minioService, Mockito.never()).download(Mockito.any());

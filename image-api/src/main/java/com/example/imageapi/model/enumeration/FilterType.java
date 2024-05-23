@@ -4,6 +4,7 @@ public enum FilterType {
 
     GRAY,
     GAUSS,
-    THRESHOLD
+    THRESHOLD,
+    RECOGNITION
 
 }

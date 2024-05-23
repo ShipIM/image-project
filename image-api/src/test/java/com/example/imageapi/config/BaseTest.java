@@ -8,7 +8,9 @@ import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -20,6 +22,7 @@ import org.testcontainers.utility.MountableFile;
 import java.nio.file.Paths;
 
 @SpringBootTest
+@ActiveProfiles(value = "test")
 @Testcontainers
 @DirtiesContext
 @ExtendWith(MockitoExtension.class)

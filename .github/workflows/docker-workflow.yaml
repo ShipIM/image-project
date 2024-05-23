@@ -92,3 +92,18 @@ jobs:
           push: true
           tags: ${{ steps.filter-threshold-meta.outputs.tags }}
           labels: ${{ steps.filter-threshold-meta.outputs.labels }}
+
+      - name: extract metadata for filter-recognition
+        id: filter-recognition-meta
+        uses: docker/metadata-action@v3.1.0
+        with:
+          images: shipim/filter-recognition:1.0.0
+
+      - name: build and push filter-recognition
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          file: ./filter/Dockerfile-recognition
+          push: true
+          tags: ${{ steps.filter-recognition-meta.outputs.tags }}
+          labels: ${{ steps.filter-recognition-meta.outputs.labels }}

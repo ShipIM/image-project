@@ -4,6 +4,7 @@ import com.example.filter.api.imagefilter.ConcreteImageFilter;
 import com.example.filter.api.repository.ProcessedRepository;
 import com.example.filter.config.BaseTest;
 import com.example.filter.dto.kafka.image.ImageFilterRequest;
+import com.example.filter.exception.ConversionFailedException;
 import com.example.filter.model.entity.Processed;
 import com.example.filter.model.enumeration.FilterType;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +38,7 @@ class FilterServiceTest extends BaseTest {
     private ConcreteImageFilter filter;
 
     @Test
-    void consume_LastFilter() {
+    void consume_LastFilter() throws Exception {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.GRAY));
@@ -68,7 +69,7 @@ class FilterServiceTest extends BaseTest {
     }
 
     @Test
-    void consume_NotLastFilter() {
+    void consume_NotLastFilter() throws Exception {
         var imageId = "imageId";
         var requestId = "requestId";
         var filters = new ArrayList<>(List.of(FilterType.GRAY, FilterType.SAMPLE));
@@ -126,6 +127,34 @@ class FilterServiceTest extends BaseTest {
         filterService.consume(imageFilterRequest, acknowledge);
 
         Mockito.verify(acknowledge, Mockito.never()).acknowledge();
+    }
+
+    @Test
+    void consume_ConversionFailed() throws Exception {
+        var imageId = "imageId";
+        var requestId = "requestId";
+        var filters = new ArrayList<>(List.of(FilterType.GRAY, FilterType.SAMPLE));
+        var imageFilterRequest = new ImageFilterRequest(imageId, requestId, filters);
+
+        var originalImage = "original".getBytes();
+        Mockito.when(minioService.download(imageId)).thenReturn(originalImage);
+
+        Mockito.when(filter.convert(originalImage)).thenThrow(new ConversionFailedException("Fail"));
+        Mockito.when(filter.getFilterType()).thenReturn(FilterType.GRAY);
+
+        var completeFuture = new CompletableFuture<SendResult<String, Object>>();
+        completeFuture.complete(Mockito.mock(SendResult.class));
+        Mockito.when(imageTemplate.send(Mockito.any(), Mockito.any())).thenReturn(completeFuture);
+
+        var acknowledge = Mockito.mock(Acknowledgment.class);
+        filterService.consume(imageFilterRequest, acknowledge);
+
+        Mockito.verify(minioService, times(1)).download(imageId);
+
+        Assertions.assertTrue(processedRepository.existsByOriginalAndRequest(imageId, requestId));
+
+        Mockito.verify(imageTemplate, times(1)).send(Mockito.anyString(), Mockito.any());
+        Mockito.verify(acknowledge, Mockito.times(1)).acknowledge();
     }
 
 }
